@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: ./life-server
+      dockerfile: Dockerfile
+    container_name: life-server
+    ports:
+      - "8080:8080" # Expose Go API on localhost:8080
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=mydb
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: life
+    ports:
+      - "5433:5432" # Expose PostgreSQL on localhost:5432
+
+  migrate:
+    image: golang-migrate/migrate:latest
+    volumes:
+      - ./life-server/db/migrations/:/db
+    depends_on:
+      - postgres
+    command:
+      ["-path", "/db" ,"-database", "postgres://postgres:postgres@postgres:5432/life?sslmode=disable", "up"]

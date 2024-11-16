@@ -1,0 +1,15 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "./queries"
+    schema: "./migrations"
+    database:
+      uri: "postgres://postgres:postgres@localhost:5433/life?sslmode=disable"
+    gen:
+      go:
+        package: "sqlc"
+        out: "./sqlc"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_prepared_queries: true
+        emit_interface: true

@@ -1,0 +1,4 @@
+CREATE TABLE workout (
+	id SERIAL PRIMARY KEY,
+	type VARCHAR NOT NULL
+);
