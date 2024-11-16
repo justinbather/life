@@ -10,6 +10,7 @@ import (
 	handler "github.com/justinbather/life/life-server/pkg/http"
 	"github.com/justinbather/life/life-server/pkg/repository"
 	"github.com/justinbather/life/life-server/pkg/service"
+	"github.com/justinbather/prettylog"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -23,9 +24,11 @@ func main() {
 	}
 	defer db.Close(context.Background())
 
-	repository := repository.NewWorkoutRepository(db)
-	service := service.NewWorkoutService(repository)
-	handler := handler.NewWorkoutHandler(service)
+	logger := prettylog.New()
+
+	repository := repository.NewWorkoutRepository(db, logger)
+	service := service.NewWorkoutService(repository, logger)
+	handler := handler.NewWorkoutHandler(service, logger)
 
 	r := mux.NewRouter()
 	r.HandleFunc("/workouts/{type}", handler.GetWorkoutsByType).Methods(http.MethodGet)

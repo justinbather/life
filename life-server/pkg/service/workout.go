@@ -2,9 +2,8 @@ package service
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/justinbather/life/life-server/db/sqlc"
+	"github.com/justinbather/life/life-server/pkg/model"
 	"github.com/justinbather/life/life-server/pkg/repository"
 	"github.com/justinbather/prettylog"
 )
@@ -15,30 +14,32 @@ type service struct {
 }
 
 type WorkoutService interface {
-	CreateWorkout(ctx context.Context, workoutType string) (sqlc.Workout, error)
-	GetWorkoutsByType(ctx context.Context, workoutType string) ([]sqlc.Workout, error)
+	CreateWorkout(ctx context.Context, workoutType string) (model.Workout, error)
+	GetWorkoutsByType(ctx context.Context, workoutType string) ([]model.Workout, error)
 }
 
-func NewWorkoutService(repository repository.WorkoutRepository) WorkoutService {
-	return &service{logger: prettylog.New(), repository: repository}
+func NewWorkoutService(repository repository.WorkoutRepository, logger *prettylog.Logger) WorkoutService {
+	return &service{repository: repository, logger: logger}
 }
 
-func (s *service) CreateWorkout(ctx context.Context, workoutType string) (sqlc.Workout, error) {
+func (s *service) CreateWorkout(ctx context.Context, workoutType string) (model.Workout, error) {
 	workout, err := s.repository.CreateWorkout(ctx, workoutType)
 	if err != nil {
-		fmt.Printf("Error creating workout with type: %s. Err: %s", workoutType, err)
-		return sqlc.Workout{}, err
+		s.logger.Errorf("Error creating workout with type: %s. Err: %s", workoutType, err)
+		return model.Workout{}, err
 	}
 
+	s.logger.Infof("Created new workout")
 	return workout, nil
 }
 
-func (s *service) GetWorkoutsByType(ctx context.Context, workoutType string) ([]sqlc.Workout, error) {
+func (s *service) GetWorkoutsByType(ctx context.Context, workoutType string) ([]model.Workout, error) {
 	workouts, err := s.repository.GetWorkoutsByType(ctx, workoutType)
 	if err != nil {
-		fmt.Printf("Error getting workouts with type: %s. Err: %s", workoutType, err)
+		s.logger.Errorf("Error getting workouts with type: %s. Err: %s", workoutType, err)
 		return nil, err
 	}
 
+	s.logger.Infof("Fetched %d workouts", len(workouts))
 	return workouts, nil
 }
