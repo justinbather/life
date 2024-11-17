@@ -44,6 +44,38 @@ func (q *Queries) CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (W
 	return i, err
 }
 
+const getAllWorkouts = `-- name: GetAllWorkouts :many
+SELECT id, type, created_at, duration, calories_burned, workload, description FROM workout
+`
+
+func (q *Queries) GetAllWorkouts(ctx context.Context) ([]Workout, error) {
+	rows, err := q.db.Query(ctx, getAllWorkouts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Workout
+	for rows.Next() {
+		var i Workout
+		if err := rows.Scan(
+			&i.ID,
+			&i.Type,
+			&i.CreatedAt,
+			&i.Duration,
+			&i.CaloriesBurned,
+			&i.Workload,
+			&i.Description,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getWorkoutsByType = `-- name: GetWorkoutsByType :many
 SELECT id, type, created_at, duration, calories_burned, workload, description FROM workout WHERE type = $1
 `

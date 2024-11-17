@@ -16,6 +16,7 @@ type service struct {
 type WorkoutService interface {
 	CreateWorkout(ctx context.Context, workout model.Workout) (model.Workout, error)
 	GetWorkoutsByType(ctx context.Context, workoutType string) ([]model.Workout, error)
+	GetAllWorkouts(ctx context.Context) ([]model.Workout, error)
 }
 
 func NewWorkoutService(repository repository.WorkoutRepository, logger *prettylog.Logger) WorkoutService {
@@ -37,6 +38,17 @@ func (s *service) GetWorkoutsByType(ctx context.Context, workoutType string) ([]
 	workouts, err := s.repository.GetWorkoutsByType(ctx, workoutType)
 	if err != nil {
 		s.logger.Errorf("Error getting workouts with type: %s. Err: %s", workoutType, err)
+		return nil, err
+	}
+
+	s.logger.Infof("Fetched %d workouts", len(workouts))
+	return workouts, nil
+}
+
+func (s *service) GetAllWorkouts(ctx context.Context) ([]model.Workout, error) {
+	workouts, err := s.repository.GetAllWorkouts(ctx)
+	if err != nil {
+		s.logger.Errorf("Error getting all workouts: %s", err)
 		return nil, err
 	}
 

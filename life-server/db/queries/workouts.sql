@@ -1,6 +1,9 @@
 -- name: GetWorkoutsByType :many
 SELECT * FROM workout WHERE type = $1;
 
+-- name: GetAllWorkouts :many
+SELECT * FROM workout;
+
 -- name: CreateWorkout :one
 INSERT INTO workout (type, duration, calories_burned, workload, description)
 	VALUES ($1, $2, $3, $4, $5) 

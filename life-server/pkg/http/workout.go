@@ -50,6 +50,27 @@ func (h *WorkoutHandler) CreateWorkout(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *WorkoutHandler) GetAllWorkouts(w http.ResponseWriter, r *http.Request) {
+	workouts, err := h.service.GetAllWorkouts(r.Context())
+	if err != nil {
+		h.logger.Errorf("Error getting all workouts Err: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if len(workouts) == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	err = encode(w, r, 200, workouts)
+	if err != nil {
+		h.logger.Errorf("Error encoding []workout in WorkoutHandler.GetAllWorkouts: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
 func (h *WorkoutHandler) GetWorkoutsByType(w http.ResponseWriter, r *http.Request) {
 	h.logger.Info("Got GetWorkoutsByType Request")
 

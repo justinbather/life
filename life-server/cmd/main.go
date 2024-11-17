@@ -32,6 +32,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/workouts/{type}", handler.GetWorkoutsByType).Methods(http.MethodGet)
+	r.HandleFunc("/workouts", handler.GetAllWorkouts).Methods(http.MethodGet)
 	r.HandleFunc("/workouts", handler.CreateWorkout).Methods(http.MethodPost)
 
 	fmt.Println("Life Server Running on 8080")
