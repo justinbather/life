@@ -7,3 +7,14 @@ CREATE TABLE workout (
 	workload INT NOT NULL,
 	description VARCHAR
 );
+
+CREATE TABLE meal (
+	id SERIAL PRIMARY KEY,
+	type VARCHAR NOT NULL,
+	calories INT NOT NULL,
+	protein INT NOT NULL,
+	carbs INT NOT NULL,
+	fat INT NOT NULL,
+	description VARCHAR,
+	date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);

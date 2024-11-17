@@ -26,14 +26,22 @@ func main() {
 
 	logger := prettylog.New()
 
-	repository := repository.NewWorkoutRepository(db, logger)
-	service := service.NewWorkoutService(repository, logger)
-	handler := handler.NewWorkoutHandler(service, logger)
+	wRepository := repository.NewWorkoutRepository(db, logger)
+	wService := service.NewWorkoutService(wRepository, logger)
+	wHandler := handler.NewWorkoutHandler(wService, logger)
+
+	mRepository := repository.NewMealRepository(db, logger)
+	mService := service.NewMealService(mRepository, logger)
+	mHandler := handler.NewMealHandler(mService, logger)
 
 	r := mux.NewRouter()
-	r.HandleFunc("/workouts/{type}", handler.GetWorkoutsByType).Methods(http.MethodGet)
-	r.HandleFunc("/workouts", handler.GetAllWorkouts).Methods(http.MethodGet)
-	r.HandleFunc("/workouts", handler.CreateWorkout).Methods(http.MethodPost)
+	r.HandleFunc("/workouts/{type}", wHandler.GetWorkoutsByType).Methods(http.MethodGet)
+	r.HandleFunc("/workouts", wHandler.GetAllWorkouts).Methods(http.MethodGet)
+	r.HandleFunc("/workouts", wHandler.CreateWorkout).Methods(http.MethodPost)
+
+	r.HandleFunc("/meals/{id}", mHandler.GetMealById).Methods(http.MethodGet)
+	r.HandleFunc("/meals/{from}/{to}", mHandler.GetMealsFromDateRange).Methods(http.MethodGet)
+	r.HandleFunc("/meals", mHandler.CreateMeal).Methods(http.MethodPost)
 
 	fmt.Println("Life Server Running on 8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {

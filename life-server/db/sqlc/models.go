@@ -8,6 +8,17 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Meal struct {
+	ID          int32            `json:"id"`
+	Type        string           `json:"type"`
+	Calories    int32            `json:"calories"`
+	Protein     int32            `json:"protein"`
+	Carbs       int32            `json:"carbs"`
+	Fat         int32            `json:"fat"`
+	Description *string          `json:"description"`
+	Date        pgtype.Timestamp `json:"date"`
+}
+
 type Workout struct {
 	ID             int32            `json:"id"`
 	Type           string           `json:"type"`
