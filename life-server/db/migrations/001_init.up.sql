@@ -1,4 +1,9 @@
 CREATE TABLE workout (
 	id SERIAL PRIMARY KEY,
-	type VARCHAR NOT NULL
+	type VARCHAR NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	duration INT NOT NULL,
+	calories_burned INT NOT NULL,
+	workload INT NOT NULL,
+	description VARCHAR
 );

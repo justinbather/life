@@ -9,7 +9,7 @@ import (
 )
 
 type WorkoutRepository interface {
-	CreateWorkout(ctx context.Context, workoutType string) (model.Workout, error)
+	CreateWorkout(ctx context.Context, workout model.Workout) (model.Workout, error)
 	GetWorkoutsByType(ctx context.Context, workoutType string) ([]model.Workout, error)
 }
 
@@ -18,14 +18,14 @@ type repository struct {
 	logger  *prettylog.Logger
 }
 
-func (r *repository) CreateWorkout(ctx context.Context, workoutType string) (model.Workout, error) {
-	workout, err := r.queries.CreateWorkout(ctx, workoutType)
+func (r *repository) CreateWorkout(ctx context.Context, workout model.Workout) (model.Workout, error) {
+	res, err := r.queries.CreateWorkout(ctx, sqlc.CreateWorkoutParams{Type: workout.Type, Duration: int32(workout.Duration), CaloriesBurned: int32(workout.CaloriesBurned), Workload: int32(workout.Workload), Description: &workout.Description})
 	if err != nil {
 		r.logger.Errorf("Error in WorkoutRepository.CreateWorkout: %s", err)
 		return model.Workout{}, err
 	}
 
-	return mapWorkout(workout), nil
+	return mapWorkout(res), nil
 }
 
 func (r *repository) GetWorkoutsByType(ctx context.Context, workoutType string) ([]model.Workout, error) {
@@ -52,5 +52,5 @@ func mapWorkouts(w []sqlc.Workout) []model.Workout {
 }
 
 func mapWorkout(w sqlc.Workout) model.Workout {
-	return model.Workout{Id: int(w.ID), Type: w.Type}
+	return model.Workout{Id: int(w.ID), Type: w.Type, Duration: int(w.Duration), CreatedAt: w.CreatedAt.Time, Workload: int(w.Workload), CaloriesBurned: int(w.CaloriesBurned), Description: *w.Description}
 }

@@ -10,18 +10,42 @@ import (
 )
 
 const createWorkout = `-- name: CreateWorkout :one
-INSERT INTO workout (type) VALUES ($1) RETURNING id, type
+INSERT INTO workout (type, duration, calories_burned, workload, description)
+	VALUES ($1, $2, $3, $4, $5) 
+	RETURNING id, type, created_at, duration, calories_burned, workload, description
 `
 
-func (q *Queries) CreateWorkout(ctx context.Context, type_ string) (Workout, error) {
-	row := q.db.QueryRow(ctx, createWorkout, type_)
+type CreateWorkoutParams struct {
+	Type           string  `json:"type"`
+	Duration       int32   `json:"duration"`
+	CaloriesBurned int32   `json:"calories_burned"`
+	Workload       int32   `json:"workload"`
+	Description    *string `json:"description"`
+}
+
+func (q *Queries) CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (Workout, error) {
+	row := q.db.QueryRow(ctx, createWorkout,
+		arg.Type,
+		arg.Duration,
+		arg.CaloriesBurned,
+		arg.Workload,
+		arg.Description,
+	)
 	var i Workout
-	err := row.Scan(&i.ID, &i.Type)
+	err := row.Scan(
+		&i.ID,
+		&i.Type,
+		&i.CreatedAt,
+		&i.Duration,
+		&i.CaloriesBurned,
+		&i.Workload,
+		&i.Description,
+	)
 	return i, err
 }
 
 const getWorkoutsByType = `-- name: GetWorkoutsByType :many
-SELECT id, type FROM workout WHERE type = $1
+SELECT id, type, created_at, duration, calories_burned, workload, description FROM workout WHERE type = $1
 `
 
 func (q *Queries) GetWorkoutsByType(ctx context.Context, type_ string) ([]Workout, error) {
@@ -33,7 +57,15 @@ func (q *Queries) GetWorkoutsByType(ctx context.Context, type_ string) ([]Workou
 	var items []Workout
 	for rows.Next() {
 		var i Workout
-		if err := rows.Scan(&i.ID, &i.Type); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Type,
+			&i.CreatedAt,
+			&i.Duration,
+			&i.CaloriesBurned,
+			&i.Workload,
+			&i.Description,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

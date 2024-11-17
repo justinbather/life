@@ -4,7 +4,16 @@
 
 package sqlc
 
+import (
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
 type Workout struct {
-	ID   int32  `json:"id"`
-	Type string `json:"type"`
+	ID             int32            `json:"id"`
+	Type           string           `json:"type"`
+	CreatedAt      pgtype.Timestamp `json:"created_at"`
+	Duration       int32            `json:"duration"`
+	CaloriesBurned int32            `json:"calories_burned"`
+	Workload       int32            `json:"workload"`
+	Description    *string          `json:"description"`
 }

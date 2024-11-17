@@ -1,9 +1,11 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/justinbather/life/life-server/pkg/model"
 	"github.com/justinbather/life/life-server/pkg/service"
 	"github.com/justinbather/prettylog"
 )
@@ -18,25 +20,23 @@ func NewWorkoutHandler(service service.WorkoutService, logger *prettylog.Logger)
 }
 
 func (h *WorkoutHandler) CreateWorkout(w http.ResponseWriter, r *http.Request) {
-	type createReq struct {
-		Type string `json:"type"`
-	}
-
 	h.logger.Info("Got CreateWorkout request")
 
-	req, err := decode[createReq](r)
+	req, err := decode[model.Workout](r)
 	if err != nil {
 		h.logger.Errorf("Error decoding createWorkoutRequest. Err: %s", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	if req.Type == "" {
+	err = validate(req)
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
-	workout, err := h.service.CreateWorkout(r.Context(), req.Type)
+	workout, err := h.service.CreateWorkout(r.Context(), req)
 	if err != nil {
 		h.logger.Errorf("Error doing create workout request: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -84,4 +84,13 @@ func (h *WorkoutHandler) GetWorkoutsByType(w http.ResponseWriter, r *http.Reques
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
+
+func validate(w model.Workout) error {
+	const REQUIRED = "%s is a required field."
+	if w.Type == "" {
+		return fmt.Errorf(REQUIRED, "Type")
+	}
+
+	return nil
 }

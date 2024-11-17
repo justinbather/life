@@ -14,7 +14,7 @@ type service struct {
 }
 
 type WorkoutService interface {
-	CreateWorkout(ctx context.Context, workoutType string) (model.Workout, error)
+	CreateWorkout(ctx context.Context, workout model.Workout) (model.Workout, error)
 	GetWorkoutsByType(ctx context.Context, workoutType string) ([]model.Workout, error)
 }
 
@@ -22,10 +22,10 @@ func NewWorkoutService(repository repository.WorkoutRepository, logger *prettylo
 	return &service{repository: repository, logger: logger}
 }
 
-func (s *service) CreateWorkout(ctx context.Context, workoutType string) (model.Workout, error) {
-	workout, err := s.repository.CreateWorkout(ctx, workoutType)
+func (s *service) CreateWorkout(ctx context.Context, workout model.Workout) (model.Workout, error) {
+	workout, err := s.repository.CreateWorkout(ctx, workout)
 	if err != nil {
-		s.logger.Errorf("Error creating workout with type: %s. Err: %s", workoutType, err)
+		s.logger.Errorf("Error creating workout with type: %s. Err: %s", workout, err)
 		return model.Workout{}, err
 	}
 

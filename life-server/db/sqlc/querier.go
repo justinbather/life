@@ -9,7 +9,7 @@ import (
 )
 
 type Querier interface {
-	CreateWorkout(ctx context.Context, type_ string) (Workout, error)
+	CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (Workout, error)
 	GetWorkoutsByType(ctx context.Context, type_ string) ([]Workout, error)
 }
 
