@@ -14,12 +14,12 @@ type WorkoutRepository interface {
 	GetAllWorkouts(ctx context.Context) ([]model.Workout, error)
 }
 
-type repository struct {
+type workoutRepository struct {
 	queries *sqlc.Queries
 	logger  *prettylog.Logger
 }
 
-func (r *repository) CreateWorkout(ctx context.Context, workout model.Workout) (model.Workout, error) {
+func (r *workoutRepository) CreateWorkout(ctx context.Context, workout model.Workout) (model.Workout, error) {
 	res, err := r.queries.CreateWorkout(ctx, sqlc.CreateWorkoutParams{Type: workout.Type, Duration: int32(workout.Duration), CaloriesBurned: int32(workout.CaloriesBurned), Workload: int32(workout.Workload), Description: &workout.Description})
 	if err != nil {
 		r.logger.Errorf("Error in WorkoutRepository.CreateWorkout: %s", err)
@@ -29,7 +29,7 @@ func (r *repository) CreateWorkout(ctx context.Context, workout model.Workout) (
 	return mapWorkout(res), nil
 }
 
-func (r *repository) GetWorkoutsByType(ctx context.Context, workoutType string) ([]model.Workout, error) {
+func (r *workoutRepository) GetWorkoutsByType(ctx context.Context, workoutType string) ([]model.Workout, error) {
 	records, err := r.queries.GetWorkoutsByType(ctx, workoutType)
 	if err != nil {
 		r.logger.Errorf("Error in WorkoutRepository.GetWorkoutsByType: %s", err)
@@ -39,7 +39,7 @@ func (r *repository) GetWorkoutsByType(ctx context.Context, workoutType string) 
 	return mapWorkouts(records), nil
 }
 
-func (r *repository) GetAllWorkouts(ctx context.Context) ([]model.Workout, error) {
+func (r *workoutRepository) GetAllWorkouts(ctx context.Context) ([]model.Workout, error) {
 	records, err := r.queries.GetAllWorkouts(ctx)
 	if err != nil {
 		r.logger.Errorf("Error in WorkoutRepository.GetAllWorkouts: %s", err)
@@ -50,7 +50,7 @@ func (r *repository) GetAllWorkouts(ctx context.Context) ([]model.Workout, error
 }
 
 func NewWorkoutRepository(db sqlc.DBTX, logger *prettylog.Logger) WorkoutRepository {
-	return &repository{queries: sqlc.New(db), logger: logger}
+	return &workoutRepository{queries: sqlc.New(db), logger: logger}
 }
 
 func mapWorkouts(w []sqlc.Workout) []model.Workout {
