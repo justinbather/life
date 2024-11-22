@@ -12,7 +12,7 @@ import (
 )
 
 // workoutCmd represents the workout command
-var workoutCmd = &cobra.Command{
+var createWorkoutCmd = &cobra.Command{
 	Use:   "workout",
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
@@ -50,14 +50,14 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
-	newCmd.AddCommand(workoutCmd)
-	workoutCmd.Flags().String("type", "", "Declares the type of workout. Ex. Run, Weights. Required")
-	workoutCmd.Flags().Int("duration", 0, "Declares the duration of the workout in minutes. Must be > 0")
-	workoutCmd.Flags().Int("cals", 0, "Declares calories burned in workout. Must be > 0")
-	workoutCmd.Flags().Int("load", 0, "Declares the workload of your workout, range from 0..10 (inclusive)")
-	workoutCmd.Flags().String("desc", "", "An optional description for the workout")
+	newCmd.AddCommand(createWorkoutCmd)
+	createWorkoutCmd.Flags().String("type", "", "Declares the type of workout. Ex. Run, Weights. Required")
+	createWorkoutCmd.Flags().Int("duration", 0, "Declares the duration of the workout in minutes. Must be > 0")
+	createWorkoutCmd.Flags().Int("cals", 0, "Declares calories burned in workout. Must be > 0")
+	createWorkoutCmd.Flags().Int("load", 0, "Declares the workload of your workout, range from 0..10 (inclusive)")
+	createWorkoutCmd.Flags().String("desc", "", "An optional description for the workout")
 
-	workoutCmd.MarkFlagRequired("type")
-	workoutCmd.MarkFlagRequired("duration")
-	workoutCmd.MarkFlagRequired("cals")
+	createWorkoutCmd.MarkFlagRequired("type")
+	createWorkoutCmd.MarkFlagRequired("duration")
+	createWorkoutCmd.MarkFlagRequired("cals")
 }
