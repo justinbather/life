@@ -12,7 +12,7 @@ import (
 type MealService interface {
 	CreateMeal(ctx context.Context, meal model.Meal) (model.Meal, error)
 	GetMealById(ctx context.Context, id int) (model.Meal, error)
-	GetMealsFromDateRange(ctx context.Context, from time.Time, to time.Time) ([]model.Meal, error)
+	GetMealsFromDateRange(ctx context.Context, user string, from time.Time, to time.Time) ([]model.Meal, error)
 }
 
 type mealService struct {
@@ -42,7 +42,7 @@ func (s *mealService) GetMealById(ctx context.Context, id int) (model.Meal, erro
 	return meal, nil
 }
 
-func (s *mealService) GetMealsFromDateRange(ctx context.Context, from time.Time, to time.Time) ([]model.Meal, error) {
+func (s *mealService) GetMealsFromDateRange(ctx context.Context, user string, from time.Time, to time.Time) ([]model.Meal, error) {
 	s.logger.Infof("Fetching meals between %s and %s", from, to)
 	meals, err := s.repository.GetMealsFromDateRange(ctx, from, to)
 	if err != nil {

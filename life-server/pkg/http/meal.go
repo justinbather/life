@@ -74,6 +74,12 @@ func (h *mealHandler) GetMealById(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *mealHandler) GetMealsFromDateRange(w http.ResponseWriter, r *http.Request) {
+	user, err := getUser(r)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	params := mux.Vars(r)
 	from := params["from"]
 	to := params["to"]

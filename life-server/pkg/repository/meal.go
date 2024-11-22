@@ -13,7 +13,7 @@ import (
 type MealRepository interface {
 	CreateMeal(ctx context.Context, meal model.Meal) (model.Meal, error)
 	GetMealById(ctx context.Context, id int) (model.Meal, error)
-	GetMealsFromDateRange(ctx context.Context, from time.Time, to time.Time) ([]model.Meal, error)
+	GetMealsFromDateRange(ctx context.Context, user string, from time.Time, to time.Time) ([]model.Meal, error)
 }
 
 type mealRepository struct {
@@ -43,8 +43,8 @@ func (r *mealRepository) GetMealById(ctx context.Context, id int) (model.Meal, e
 	return mapMeal(record), nil
 }
 
-func (r *mealRepository) GetMealsFromDateRange(ctx context.Context, from time.Time, to time.Time) ([]model.Meal, error) {
-	records, err := r.queries.GetMealsFromDateRange(ctx, sqlc.GetMealsFromDateRangeParams{Date: mapDate(from), Date_2: mapDate(to)})
+func (r *mealRepository) GetMealsFromDateRange(ctx context.Context, user string, from time.Time, to time.Time) ([]model.Meal, error) {
+	records, err := r.queries.GetMealsFromDateRange(ctx, sqlc.GetMealsFromDateRangeParams{Username: user, Date: mapDate(from), Date_2: mapDate(to)})
 	if err != nil {
 		r.logger.Errorf("Error getting meals from date range: ", err)
 		return nil, err
