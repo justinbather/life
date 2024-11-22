@@ -1,7 +1,6 @@
 package http
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -10,9 +9,6 @@ import (
 	"github.com/justinbather/life/life-server/pkg/service"
 	"github.com/justinbather/prettylog"
 )
-
-// Learn more about doing custom errors like this, where to put them etc
-var ERR_USER_NOT_FOUND = errors.New("User not found")
 
 type WorkoutHandler struct {
 	service service.WorkoutService
@@ -60,7 +56,8 @@ func (h *WorkoutHandler) GetAllWorkouts(w http.ResponseWriter, r *http.Request) 
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	workouts, err := h.service.GetAllWorkouts(r.Context())
+
+	workouts, err := h.service.GetAllWorkouts(r.Context(), user)
 	if err != nil {
 		h.logger.Errorf("Error getting all workouts Err: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -83,6 +80,12 @@ func (h *WorkoutHandler) GetAllWorkouts(w http.ResponseWriter, r *http.Request) 
 func (h *WorkoutHandler) GetWorkoutsByType(w http.ResponseWriter, r *http.Request) {
 	h.logger.Info("Got GetWorkoutsByType Request")
 
+	user, err := getUser(r)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	params := mux.Vars(r)
 	workoutType := params["type"]
 
@@ -96,7 +99,7 @@ func (h *WorkoutHandler) GetWorkoutsByType(w http.ResponseWriter, r *http.Reques
 		}
 	}
 
-	workouts, err := h.service.GetWorkoutsByType(r.Context(), workoutType)
+	workouts, err := h.service.GetWorkoutsByType(r.Context(), user, workoutType)
 	if err != nil {
 		h.logger.Errorf("Error getting workouts by type: %s. Err: %s", workoutType, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -123,14 +126,4 @@ func validate(w model.Workout) error {
 	}
 
 	return nil
-}
-
-func getUser(r *http.Request) (string, error) {
-	params := mux.Vars(r)
-	user := params["user"]
-	if user == "" {
-		return "", ERR_USER_NOT_FOUND
-	}
-
-	return user, nil
 }
