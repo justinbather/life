@@ -3,7 +3,6 @@ package http
 import (
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/justinbather/life/life-server/pkg/model"

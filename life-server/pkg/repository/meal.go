@@ -39,6 +39,7 @@ func (r *mealRepository) GetMealById(ctx context.Context, id int) (model.Meal, e
 	record, err := r.queries.GetMealById(ctx, int32(id))
 	if err != nil {
 		r.logger.Errorf("Error getting meal by id=%d. Err: %s", id, err)
+		return model.Meal{}, err
 	}
 	return mapMeal(record), nil
 }
@@ -49,6 +50,7 @@ func (r *mealRepository) GetMealsFromDateRange(ctx context.Context, user string,
 		r.logger.Errorf("Error getting meals from date range: ", err)
 		return nil, err
 	}
+
 	return mapMeals(records), nil
 }
 

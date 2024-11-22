@@ -17,7 +17,7 @@ import (
 
 func main() {
 
-	db, err := pgx.Connect(context.Background(), os.Getenv("POSTGRES_URL"))
+	db, err := pgx.Connect(context.Background(), os.Getenv("DB_URL"))
 	if err != nil {
 		fmt.Printf("Error making connection to postgres db on app startup. Err: %s\n", err)
 		os.Exit(1)
@@ -35,6 +35,7 @@ func main() {
 	mHandler := handler.NewMealHandler(mService, logger)
 
 	r := mux.NewRouter()
+	r.HandleFunc("/workouts/{user}/{from}/{to}", wHandler.GetWorkoutsFromDateRange).Methods(http.MethodGet)
 	r.HandleFunc("/workouts/{user}/{type}", wHandler.GetWorkoutsByType).Methods(http.MethodGet)
 	r.HandleFunc("/workouts/{user}", wHandler.GetAllWorkouts).Methods(http.MethodGet)
 	r.HandleFunc("/workouts", wHandler.CreateWorkout).Methods(http.MethodPost)

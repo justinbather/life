@@ -119,7 +119,9 @@ func (h *WorkoutHandler) GetWorkoutsByType(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func (h *WorkoutHandler) GetWorkoutsByDateRange(w http.ResponseWriter, r *http.Request) {
+func (h *WorkoutHandler) GetWorkoutsFromDateRange(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Infof("Fetching workouts between dates %s and %s", "1", "2")
 	user, err := getUser(r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -132,6 +134,8 @@ func (h *WorkoutHandler) GetWorkoutsByDateRange(w http.ResponseWriter, r *http.R
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	h.logger.Infof("Fetching workouts between dates %s and %s", dates["from"], dates["to"])
 
 	workouts, err := h.service.GetWorkoutsFromDateRange(r.Context(), user, dates["from"], dates["to"])
 	if err != nil {
