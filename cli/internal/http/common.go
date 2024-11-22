@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/justinbather/life/cli/model"
 )
 
 var baseUri string = "http://localhost:8080"
@@ -46,4 +48,38 @@ func create[T any](v T, uri string) (T, error) {
 	err = json.Unmarshal(body, &created)
 
 	return created, nil
+}
+
+func get(uri string) ([]model.Workout, error) {
+
+	req, err := http.NewRequest("GET", baseUri+uri, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("Error fetching workouts")
+	}
+
+	var workouts []model.Workout
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, &workouts)
+	if err != nil {
+		return nil, err
+	}
+
+	return workouts, nil
 }
