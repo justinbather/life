@@ -5,7 +5,7 @@ type Workout struct {
 	User           string `json:"user,omitempty"`
 	Type           string `json:"type"`
 	Duration       int    `json:"duration"`
-	CaloriesBurned int    `json:"caloriedBurned"`
+	CaloriesBurned int    `json:"caloriesBurned"`
 	Workload       int    `json:"workload"`
 	Description    string `json:"description"`
 }

@@ -39,13 +39,13 @@ to quickly create a Cobra application.`,
 
 		workout := model.Workout{User: user, Type: wType, Duration: wDur, CaloriesBurned: wCals, Workload: wLoad, Description: wDesc}
 
-		workout, err = service.CreateWorkout(workout)
+		w, err := service.CreateWorkout(workout)
 		if err != nil {
 			return err
 		}
 
 		fmt.Println("Created workout successfully...")
-		fmt.Printf("User: %s\nType: %s\nCalories Burned: %d\nDuration: %d\nWorkload: %d\nDescription: %s\n", workout.User, workout.Type, workout.CaloriesBurned, workout.Duration, workout.Workload, workout.Description)
+		fmt.Printf("User: %s\nType: %s\nCalories Burned: %d\nDuration: %d\nWorkload: %d\nDescription: %s\n", w.User, w.Type, w.CaloriesBurned, w.Duration, w.Workload, w.Description)
 		return nil
 	},
 }
@@ -66,6 +66,7 @@ func validateFlags(flags *pflag.FlagSet) error {
 	if wCals == 0 {
 		return fmt.Errorf("Calories is required. Must be greater than 0")
 	}
+
 	wType, err := flags.GetString("type")
 	if err != nil {
 		return err
