@@ -51,8 +51,9 @@ func getMeal(flags *pflag.FlagSet) model.Meal {
 	carbs, _ := flags.GetInt("carbs")
 	fat, _ := flags.GetInt("fat")
 	desc, _ := flags.GetString("desc")
+	user, _ := flags.GetString("user")
 
-	meal := model.Meal{Type: _type, Calories: cals, Protein: protein, Carbs: carbs, Fat: fat, Description: desc}
+	meal := model.Meal{User: user, Type: _type, Calories: cals, Protein: protein, Carbs: carbs, Fat: fat, Description: desc}
 
 	return meal
 }

@@ -14,5 +14,5 @@ func CreateWorkout(workout model.Workout) (model.Workout, error) {
 
 func GetWorkouts(user string, dateRange map[string]string) ([]model.Workout, error) {
 	fullPath := workoutUri + fmt.Sprintf("/%s/%s/%s", user, dateRange["start"], dateRange["end"])
-	return get(fullPath)
+	return get(fullPath, model.Workout{})
 }

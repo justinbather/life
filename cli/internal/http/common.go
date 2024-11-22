@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-
-	"github.com/justinbather/life/cli/model"
 )
 
 var baseUri string = "http://localhost:8080"
@@ -50,7 +48,7 @@ func create[T any](v T, uri string) (T, error) {
 	return created, nil
 }
 
-func get(uri string) ([]model.Workout, error) {
+func get[T any](uri string, _ T) ([]T, error) {
 
 	req, err := http.NewRequest("GET", baseUri+uri, nil)
 	if err != nil {
@@ -69,17 +67,17 @@ func get(uri string) ([]model.Workout, error) {
 		return nil, fmt.Errorf("Error fetching workouts")
 	}
 
-	var workouts []model.Workout
+	var items []T
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	err = json.Unmarshal(body, &workouts)
+	err = json.Unmarshal(body, &items)
 	if err != nil {
 		return nil, err
 	}
 
-	return workouts, nil
+	return items, nil
 }

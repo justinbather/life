@@ -1,40 +1,52 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
 	"fmt"
 
+	"github.com/justinbather/life/cli/internal/service"
+	"github.com/justinbather/life/cli/pkg/timeframe"
 	"github.com/spf13/cobra"
 )
 
 // mealsCmd represents the meals command
 var mealsCmd = &cobra.Command{
 	Use:   "meals",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "",
+	Long:  ``,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		flagVal, _ := cmd.Flags().GetString("timeframe")
+		tf, err := timeframe.ParseTimeframe(flagVal)
+		if err != nil {
+			return err
+		}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("meals called")
+		fmt.Printf("Fetching meals from the past %s...\n", tf.String())
+
+		user, _ := cmd.Flags().GetString("user")
+
+		mp := tf.GetRange()
+
+		meals, err := service.GetMeals(user, mp)
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("Fetched %d meals successfully...\n", len(meals))
+		fmt.Println("Results")
+		fmt.Println("#   Type    Cals     Protein    Carbs    Fat    Desc")
+		for idx, m := range meals {
+			fmt.Printf("%d   %s    %d         %d      %d      %d     %s\n", idx, m.Type, m.Calories, m.Protein, m.Carbs, m.Fat, m.Description)
+		}
+
+		return nil
 	},
 }
 
 func init() {
 	getCmd.AddCommand(mealsCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// mealsCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// mealsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	mealsCmd.Flags().String("timeframe", "week", "Optional: Query timeframe. Defaults to week")
 }
