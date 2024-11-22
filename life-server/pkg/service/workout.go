@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/justinbather/life/life-server/pkg/model"
 	"github.com/justinbather/life/life-server/pkg/repository"
@@ -17,6 +18,7 @@ type WorkoutService interface {
 	CreateWorkout(ctx context.Context, workout model.Workout) (model.Workout, error)
 	GetWorkoutsByType(ctx context.Context, user string, workoutType string) ([]model.Workout, error)
 	GetAllWorkouts(ctx context.Context, user string) ([]model.Workout, error)
+	GetWorkoutsFromDateRange(ctx context.Context, user string, from, to time.Time) ([]model.Workout, error)
 }
 
 func NewWorkoutService(repository repository.WorkoutRepository, logger *prettylog.Logger) WorkoutService {
@@ -26,7 +28,6 @@ func NewWorkoutService(repository repository.WorkoutRepository, logger *prettylo
 func (s *service) CreateWorkout(ctx context.Context, workout model.Workout) (model.Workout, error) {
 	workout, err := s.repository.CreateWorkout(ctx, workout)
 	if err != nil {
-		s.logger.Errorf("Error creating workout with type: %s. Err: %s", workout, err)
 		return model.Workout{}, err
 	}
 
@@ -37,7 +38,6 @@ func (s *service) CreateWorkout(ctx context.Context, workout model.Workout) (mod
 func (s *service) GetWorkoutsByType(ctx context.Context, user, workoutType string) ([]model.Workout, error) {
 	workouts, err := s.repository.GetWorkoutsByType(ctx, user, workoutType)
 	if err != nil {
-		s.logger.Errorf("Error getting workouts with type: %s. Err: %s", workoutType, err)
 		return nil, err
 	}
 
@@ -48,7 +48,16 @@ func (s *service) GetWorkoutsByType(ctx context.Context, user, workoutType strin
 func (s *service) GetAllWorkouts(ctx context.Context, user string) ([]model.Workout, error) {
 	workouts, err := s.repository.GetAllWorkouts(ctx, user)
 	if err != nil {
-		s.logger.Errorf("Error getting all workouts: %s", err)
+		return nil, err
+	}
+
+	s.logger.Infof("Fetched %d workouts", len(workouts))
+	return workouts, nil
+}
+
+func (s *service) GetWorkoutsFromDateRange(ctx context.Context, user string, from, to time.Time) ([]model.Workout, error) {
+	workouts, err := s.repository.GetWorkoutsFromDateRange(ctx, user, from, to)
+	if err != nil {
 		return nil, err
 	}
 

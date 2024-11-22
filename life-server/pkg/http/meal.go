@@ -79,33 +79,14 @@ func (h *mealHandler) GetMealsFromDateRange(w http.ResponseWriter, r *http.Reque
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-
-	params := mux.Vars(r)
-	from := params["from"]
-	to := params["to"]
-
-	if from == "" || to == "" {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	fromDate, err := time.Parse(time.RFC3339, from)
+	dates, err := parseDateParams(r)
 	if err != nil {
-		h.logger.Errorf("Error parsing from date. Given: %s. Threw: %s", from, err)
+		h.logger.Errorf("Failed to parse date: %s", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Error: Date must be in YYYY-MM-DDTHH:MM:SST format"))
 		return
 	}
 
-	toDate, err := time.Parse(time.RFC3339, to)
-	if err != nil {
-		h.logger.Errorf("Error parsing to date. Given: %s. Threw: %s", to, err)
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Error: Date must be in YYYY-MM-DDTHH:MM:SST format"))
-		return
-	}
-
-	meals, err := h.service.GetMealsFromDateRange(r.Context(), fromDate, toDate)
+	meals, err := h.service.GetMealsFromDateRange(r.Context(), user, dates["from"], dates["to"])
 	if err != nil {
 		h.logger.Errorf("Error fetching meals from range: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)

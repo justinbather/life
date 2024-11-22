@@ -119,6 +119,35 @@ func (h *WorkoutHandler) GetWorkoutsByType(w http.ResponseWriter, r *http.Reques
 	}
 }
 
+func (h *WorkoutHandler) GetWorkoutsByDateRange(w http.ResponseWriter, r *http.Request) {
+	user, err := getUser(r)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	dates, err := parseDateParams(r)
+	if err != nil {
+		h.logger.Errorf("Error parsing dates: %s", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	workouts, err := h.service.GetWorkoutsFromDateRange(r.Context(), user, dates["from"], dates["to"])
+	if err != nil {
+		h.logger.Errorf("Error getting workouts from date range: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	err = encode(w, r, 200, workouts)
+	if err != nil {
+		h.logger.Errorf("Error encoding []workout in GetWorkoutsFromDateRange: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
 func validate(w model.Workout) error {
 	const REQUIRED = "%s is a required field."
 	if w.Type == "" {

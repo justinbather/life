@@ -7,6 +7,8 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createWorkout = `-- name: CreateWorkout :one
@@ -91,6 +93,45 @@ type GetWorkoutsByTypeParams struct {
 
 func (q *Queries) GetWorkoutsByType(ctx context.Context, arg GetWorkoutsByTypeParams) ([]Workout, error) {
 	rows, err := q.db.Query(ctx, getWorkoutsByType, arg.Username, arg.Type)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Workout
+	for rows.Next() {
+		var i Workout
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.Type,
+			&i.CreatedAt,
+			&i.Duration,
+			&i.CaloriesBurned,
+			&i.Workload,
+			&i.Description,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getWorkoutsFromDateRange = `-- name: GetWorkoutsFromDateRange :many
+SELECT id, username, type, created_at, duration, calories_burned, workload, description FROM workout WHERE username = $1 AND created_at BETWEEN $2 AND $3
+`
+
+type GetWorkoutsFromDateRangeParams struct {
+	Username    string           `json:"username"`
+	CreatedAt   pgtype.Timestamp `json:"created_at"`
+	CreatedAt_2 pgtype.Timestamp `json:"created_at_2"`
+}
+
+func (q *Queries) GetWorkoutsFromDateRange(ctx context.Context, arg GetWorkoutsFromDateRangeParams) ([]Workout, error) {
+	rows, err := q.db.Query(ctx, getWorkoutsFromDateRange, arg.Username, arg.CreatedAt, arg.CreatedAt_2)
 	if err != nil {
 		return nil, err
 	}

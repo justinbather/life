@@ -27,7 +27,7 @@ func NewMealRepository(db sqlc.DBTX, logger *prettylog.Logger) MealRepository {
 
 func (r *mealRepository) CreateMeal(ctx context.Context, meal model.Meal) (model.Meal, error) {
 	date := pgtype.Timestamp{Time: meal.Date, Valid: true}
-	record, err := r.queries.CreateMeal(ctx, sqlc.CreateMealParams{Type: meal.Type, Calories: int32(meal.Calories), Protein: int32(meal.Protein), Carbs: int32(meal.Carbs), Fat: int32(meal.Fat), Description: &meal.Description, Date: date})
+	record, err := r.queries.CreateMeal(ctx, sqlc.CreateMealParams{Type: meal.Type, Username: meal.User, Calories: int32(meal.Calories), Protein: int32(meal.Protein), Carbs: int32(meal.Carbs), Fat: int32(meal.Fat), Description: &meal.Description, Date: date})
 	if err != nil {
 		r.logger.Errorf("Error saving meal: %s", err)
 		return model.Meal{}, nil
@@ -52,10 +52,6 @@ func (r *mealRepository) GetMealsFromDateRange(ctx context.Context, user string,
 	return mapMeals(records), nil
 }
 
-func mapDate(d time.Time) pgtype.Timestamp {
-	return pgtype.Timestamp{Time: d, Valid: true}
-}
-
 func mapMeals(m []sqlc.Meal) []model.Meal {
 	var meals []model.Meal
 	for _, meal := range m {
@@ -65,5 +61,5 @@ func mapMeals(m []sqlc.Meal) []model.Meal {
 }
 
 func mapMeal(m sqlc.Meal) model.Meal {
-	return model.Meal{Id: int(m.ID), Type: m.Type, Calories: int(m.Calories), Protein: int(m.Protein), Carbs: int(m.Carbs), Fat: int(m.Fat), Description: *m.Description, Date: m.Date.Time}
+	return model.Meal{Id: int(m.ID), User: m.Username, Type: m.Type, Calories: int(m.Calories), Protein: int(m.Protein), Carbs: int(m.Carbs), Fat: int(m.Fat), Description: *m.Description, Date: m.Date.Time}
 }

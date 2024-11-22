@@ -14,7 +14,7 @@ import (
 const createMeal = `-- name: CreateMeal :one
 INSERT INTO meal (type, username, calories, protein, carbs, fat, description, date) 
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-	RETURNING id, type, username, calories, protein, carbs, fat, description, date
+	RETURNING id, username, type, calories, protein, carbs, fat, description, date
 `
 
 type CreateMealParams struct {
@@ -28,19 +28,7 @@ type CreateMealParams struct {
 	Date        pgtype.Timestamp `json:"date"`
 }
 
-type CreateMealRow struct {
-	ID          int32            `json:"id"`
-	Type        string           `json:"type"`
-	Username    string           `json:"username"`
-	Calories    int32            `json:"calories"`
-	Protein     int32            `json:"protein"`
-	Carbs       int32            `json:"carbs"`
-	Fat         int32            `json:"fat"`
-	Description *string          `json:"description"`
-	Date        pgtype.Timestamp `json:"date"`
-}
-
-func (q *Queries) CreateMeal(ctx context.Context, arg CreateMealParams) (CreateMealRow, error) {
+func (q *Queries) CreateMeal(ctx context.Context, arg CreateMealParams) (Meal, error) {
 	row := q.db.QueryRow(ctx, createMeal,
 		arg.Type,
 		arg.Username,
@@ -51,11 +39,11 @@ func (q *Queries) CreateMeal(ctx context.Context, arg CreateMealParams) (CreateM
 		arg.Description,
 		arg.Date,
 	)
-	var i CreateMealRow
+	var i Meal
 	err := row.Scan(
 		&i.ID,
-		&i.Type,
 		&i.Username,
+		&i.Type,
 		&i.Calories,
 		&i.Protein,
 		&i.Carbs,

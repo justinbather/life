@@ -8,3 +8,6 @@ SELECT * FROM workout WHERE username = $1;
 INSERT INTO workout (type, username, duration, calories_burned, workload, description)
 	VALUES ($1, $2, $3, $4, $5, $6) 
 	RETURNING id, username, type, created_at, duration, calories_burned, workload, description;
+
+-- name: GetWorkoutsFromDateRange :many
+SELECT * FROM workout WHERE username = $1 AND created_at BETWEEN $2 AND $3;

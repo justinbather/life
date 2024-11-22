@@ -5,16 +5,19 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 )
 
 // Learn more about doing custom errors like this, where to put them etc
 var ERR_USER_NOT_FOUND = errors.New("User not found")
+var ERR_INVALID_DATE = errors.New("Invalid date")
 
 func encode[T any](w http.ResponseWriter, r *http.Request, status int, v T) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
+
 	if err := json.NewEncoder(w).Encode(v); err != nil {
 		return fmt.Errorf("encode json: %w", err)
 	}
@@ -37,4 +40,31 @@ func getUser(r *http.Request) (string, error) {
 	}
 
 	return user, nil
+}
+
+func parseDateParams(r *http.Request) (map[string]time.Time, error) {
+	params := mux.Vars(r)
+	from := params["from"]
+	to := params["to"]
+
+	if from == "" || to == "" {
+		return nil, ERR_INVALID_DATE
+	}
+
+	fromDate, err := time.Parse(time.RFC3339, from)
+	if err != nil {
+		return nil, err
+	}
+
+	toDate, err := time.Parse(time.RFC3339, to)
+	if err != nil {
+		return nil, err
+	}
+
+	mp := make(map[string]time.Time)
+	mp["from"] = fromDate
+	mp["to"] = toDate
+
+	return mp, nil
+
 }

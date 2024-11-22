@@ -44,7 +44,7 @@ func (s *mealService) GetMealById(ctx context.Context, id int) (model.Meal, erro
 
 func (s *mealService) GetMealsFromDateRange(ctx context.Context, user string, from time.Time, to time.Time) ([]model.Meal, error) {
 	s.logger.Infof("Fetching meals between %s and %s", from, to)
-	meals, err := s.repository.GetMealsFromDateRange(ctx, from, to)
+	meals, err := s.repository.GetMealsFromDateRange(ctx, user, from, to)
 	if err != nil {
 		return nil, err
 	}
