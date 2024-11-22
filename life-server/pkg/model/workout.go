@@ -6,6 +6,7 @@ import (
 
 type Workout struct {
 	Id             int       `json:"id"`
+	User           string    `json:"user"`
 	Type           string    `json:"type"`
 	CreatedAt      time.Time `json:"createdAt"`
 	Duration       int       `json:"duration"`

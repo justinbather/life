@@ -4,6 +4,7 @@ import "time"
 
 type Meal struct {
 	Id          int       `json:"id"`
+	User        string    `json:"user"`
 	Type        string    `json:"type"`
 	Calories    int       `json:"calories"`
 	Protein     int       `json:"protein"`
