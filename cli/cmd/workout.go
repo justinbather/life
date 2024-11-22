@@ -9,7 +9,6 @@ import (
 	"github.com/justinbather/life/cli/internal/service"
 	"github.com/justinbather/life/cli/model"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
 // workoutCmd represents the workout command
@@ -23,9 +22,8 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("Creating new workout")
-		err := validateFlags(cmd.LocalFlags())
-		if err != nil {
+		fmt.Println("Creating new workout...")
+		if err := cmd.ValidateRequiredFlags(); err != nil {
 			return err
 		}
 
@@ -41,7 +39,8 @@ to quickly create a Cobra application.`,
 
 		w, err := service.CreateWorkout(workout)
 		if err != nil {
-			return err
+			fmt.Printf("Error Creating workout: %s", err)
+			return nil
 		}
 
 		fmt.Println("Created workout successfully...")
@@ -50,56 +49,8 @@ to quickly create a Cobra application.`,
 	},
 }
 
-func validateFlags(flags *pflag.FlagSet) error {
-	wDur, err := flags.GetInt("duration")
-	if err != nil {
-		return err
-	}
-	if wDur == 0 {
-		return fmt.Errorf("Duration is required. Must be greater than 0")
-	}
-
-	wCals, err := flags.GetInt("cals")
-	if err != nil {
-		return err
-	}
-	if wCals == 0 {
-		return fmt.Errorf("Calories is required. Must be greater than 0")
-	}
-
-	wType, err := flags.GetString("type")
-	if err != nil {
-		return err
-	}
-	if wType == "" {
-		return fmt.Errorf("Type is required")
-	}
-
-	_, err = flags.GetInt("load")
-	if err != nil {
-		return err
-	}
-
-	_, err = flags.GetString("desc")
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func init() {
 	newCmd.AddCommand(workoutCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// workoutCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	//workoutCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	workoutCmd.Flags().String("type", "", "Declares the type of workout. Ex. Run, Weights. Required")
 	workoutCmd.Flags().Int("duration", 0, "Declares the duration of the workout in minutes. Must be > 0")
 	workoutCmd.Flags().Int("cals", 0, "Declares calories burned in workout. Must be > 0")
