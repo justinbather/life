@@ -10,13 +10,14 @@ import (
 )
 
 const createWorkout = `-- name: CreateWorkout :one
-INSERT INTO workout (type, duration, calories_burned, workload, description)
-	VALUES ($1, $2, $3, $4, $5) 
-	RETURNING id, type, created_at, duration, calories_burned, workload, description
+INSERT INTO workout (type, username, duration, calories_burned, workload, description)
+	VALUES ($1, $2, $3, $4, $5, $6) 
+	RETURNING id, username, type, created_at, duration, calories_burned, workload, description
 `
 
 type CreateWorkoutParams struct {
 	Type           string  `json:"type"`
+	Username       string  `json:"username"`
 	Duration       int32   `json:"duration"`
 	CaloriesBurned int32   `json:"calories_burned"`
 	Workload       int32   `json:"workload"`
@@ -26,6 +27,7 @@ type CreateWorkoutParams struct {
 func (q *Queries) CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (Workout, error) {
 	row := q.db.QueryRow(ctx, createWorkout,
 		arg.Type,
+		arg.Username,
 		arg.Duration,
 		arg.CaloriesBurned,
 		arg.Workload,
@@ -34,6 +36,7 @@ func (q *Queries) CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (W
 	var i Workout
 	err := row.Scan(
 		&i.ID,
+		&i.Username,
 		&i.Type,
 		&i.CreatedAt,
 		&i.Duration,
@@ -45,11 +48,11 @@ func (q *Queries) CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (W
 }
 
 const getAllWorkouts = `-- name: GetAllWorkouts :many
-SELECT id, type, created_at, duration, calories_burned, workload, description FROM workout
+SELECT id, username, type, created_at, duration, calories_burned, workload, description FROM workout WHERE username = $1
 `
 
-func (q *Queries) GetAllWorkouts(ctx context.Context) ([]Workout, error) {
-	rows, err := q.db.Query(ctx, getAllWorkouts)
+func (q *Queries) GetAllWorkouts(ctx context.Context, username string) ([]Workout, error) {
+	rows, err := q.db.Query(ctx, getAllWorkouts, username)
 	if err != nil {
 		return nil, err
 	}
@@ -59,6 +62,7 @@ func (q *Queries) GetAllWorkouts(ctx context.Context) ([]Workout, error) {
 		var i Workout
 		if err := rows.Scan(
 			&i.ID,
+			&i.Username,
 			&i.Type,
 			&i.CreatedAt,
 			&i.Duration,
@@ -77,11 +81,16 @@ func (q *Queries) GetAllWorkouts(ctx context.Context) ([]Workout, error) {
 }
 
 const getWorkoutsByType = `-- name: GetWorkoutsByType :many
-SELECT id, type, created_at, duration, calories_burned, workload, description FROM workout WHERE type = $1
+SELECT id, username, type, created_at, duration, calories_burned, workload, description FROM workout WHERE username = $1 AND type = $2
 `
 
-func (q *Queries) GetWorkoutsByType(ctx context.Context, type_ string) ([]Workout, error) {
-	rows, err := q.db.Query(ctx, getWorkoutsByType, type_)
+type GetWorkoutsByTypeParams struct {
+	Username string `json:"username"`
+	Type     string `json:"type"`
+}
+
+func (q *Queries) GetWorkoutsByType(ctx context.Context, arg GetWorkoutsByTypeParams) ([]Workout, error) {
+	rows, err := q.db.Query(ctx, getWorkoutsByType, arg.Username, arg.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -91,6 +100,7 @@ func (q *Queries) GetWorkoutsByType(ctx context.Context, type_ string) ([]Workou
 		var i Workout
 		if err := rows.Scan(
 			&i.ID,
+			&i.Username,
 			&i.Type,
 			&i.CreatedAt,
 			&i.Duration,

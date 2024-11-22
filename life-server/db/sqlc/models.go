@@ -10,6 +10,7 @@ import (
 
 type Meal struct {
 	ID          int32            `json:"id"`
+	Username    string           `json:"username"`
 	Type        string           `json:"type"`
 	Calories    int32            `json:"calories"`
 	Protein     int32            `json:"protein"`
@@ -21,6 +22,7 @@ type Meal struct {
 
 type Workout struct {
 	ID             int32            `json:"id"`
+	Username       string           `json:"username"`
 	Type           string           `json:"type"`
 	CreatedAt      pgtype.Timestamp `json:"created_at"`
 	Duration       int32            `json:"duration"`
