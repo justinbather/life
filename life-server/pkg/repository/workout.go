@@ -10,8 +10,8 @@ import (
 
 type WorkoutRepository interface {
 	CreateWorkout(ctx context.Context, workout model.Workout) (model.Workout, error)
-	GetWorkoutsByType(ctx context.Context, workoutType string) ([]model.Workout, error)
-	GetAllWorkouts(ctx context.Context) ([]model.Workout, error)
+	GetWorkoutsByType(ctx context.Context, user, workoutType string) ([]model.Workout, error)
+	GetAllWorkouts(ctx context.Context, user string) ([]model.Workout, error)
 }
 
 type workoutRepository struct {
@@ -29,8 +29,8 @@ func (r *workoutRepository) CreateWorkout(ctx context.Context, workout model.Wor
 	return mapWorkout(res), nil
 }
 
-func (r *workoutRepository) GetWorkoutsByType(ctx context.Context, workoutType string) ([]model.Workout, error) {
-	records, err := r.queries.GetWorkoutsByType(ctx, workoutType)
+func (r *workoutRepository) GetWorkoutsByType(ctx context.Context, user, workoutType string) ([]model.Workout, error) {
+	records, err := r.queries.GetWorkoutsByType(ctx, sqlc.GetWorkoutsByTypeParams{Username: user, Type: workoutType})
 	if err != nil {
 		r.logger.Errorf("Error in WorkoutRepository.GetWorkoutsByType: %s", err)
 		return nil, err
@@ -39,8 +39,8 @@ func (r *workoutRepository) GetWorkoutsByType(ctx context.Context, workoutType s
 	return mapWorkouts(records), nil
 }
 
-func (r *workoutRepository) GetAllWorkouts(ctx context.Context) ([]model.Workout, error) {
-	records, err := r.queries.GetAllWorkouts(ctx)
+func (r *workoutRepository) GetAllWorkouts(ctx context.Context, user string) ([]model.Workout, error) {
+	records, err := r.queries.GetAllWorkouts(ctx, user)
 	if err != nil {
 		r.logger.Errorf("Error in WorkoutRepository.GetAllWorkouts: %s", err)
 		return nil, err

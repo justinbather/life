@@ -35,12 +35,12 @@ func main() {
 	mHandler := handler.NewMealHandler(mService, logger)
 
 	r := mux.NewRouter()
-	r.HandleFunc("/workouts/{type}", wHandler.GetWorkoutsByType).Methods(http.MethodGet)
-	r.HandleFunc("/workouts", wHandler.GetAllWorkouts).Methods(http.MethodGet)
+	r.HandleFunc("/workouts/{user}/{type}", wHandler.GetWorkoutsByType).Methods(http.MethodGet)
+	r.HandleFunc("/workouts/{user}", wHandler.GetAllWorkouts).Methods(http.MethodGet)
 	r.HandleFunc("/workouts", wHandler.CreateWorkout).Methods(http.MethodPost)
 
 	r.HandleFunc("/meals/{id}", mHandler.GetMealById).Methods(http.MethodGet)
-	r.HandleFunc("/meals/{from}/{to}", mHandler.GetMealsFromDateRange).Methods(http.MethodGet)
+	r.HandleFunc("/meals/{user}/{from}/{to}", mHandler.GetMealsFromDateRange).Methods(http.MethodGet)
 	r.HandleFunc("/meals", mHandler.CreateMeal).Methods(http.MethodPost)
 
 	fmt.Println("Life Server Running on 8080")

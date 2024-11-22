@@ -1,6 +1,7 @@
 package http
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -9,6 +10,9 @@ import (
 	"github.com/justinbather/life/life-server/pkg/service"
 	"github.com/justinbather/prettylog"
 )
+
+// Learn more about doing custom errors like this, where to put them etc
+var ERR_USER_NOT_FOUND = errors.New("User not found")
 
 type WorkoutHandler struct {
 	service service.WorkoutService
@@ -51,6 +55,11 @@ func (h *WorkoutHandler) CreateWorkout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *WorkoutHandler) GetAllWorkouts(w http.ResponseWriter, r *http.Request) {
+	user, err := getUser(r)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 	workouts, err := h.service.GetAllWorkouts(r.Context())
 	if err != nil {
 		h.logger.Errorf("Error getting all workouts Err: %s", err)
@@ -114,4 +123,14 @@ func validate(w model.Workout) error {
 	}
 
 	return nil
+}
+
+func getUser(r *http.Request) (string, error) {
+	params := mux.Vars(r)
+	user := params["user"]
+	if user == "" {
+		return "", ERR_USER_NOT_FOUND
+	}
+
+	return user, nil
 }
