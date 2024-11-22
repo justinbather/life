@@ -6,6 +6,8 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/justinbather/life/cli/internal/service"
+	"github.com/justinbather/life/cli/model"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -27,30 +29,59 @@ to quickly create a Cobra application.`,
 			return err
 		}
 
+		// fairly ugly, refetching these flags after validation
 		wType, _ := cmd.Flags().GetString("type")
 		wDur, _ := cmd.Flags().GetInt("duration")
 		wCals, _ := cmd.Flags().GetInt("cals")
 		wLoad, _ := cmd.Flags().GetInt("load")
 		wDesc, _ := cmd.Flags().GetString("desc")
+		user, _ := cmd.Flags().GetString("user")
 
-		fmt.Println("Workout Details")
-		fmt.Printf("Type: %s\nCalories Burned: %d\nDuration: %d\nWorkload: %d\nDescription: %s\n", wType, wCals, wDur, wLoad, wDesc)
+		workout := model.Workout{User: user, Type: wType, Duration: wDur, CaloriesBurned: wCals, Workload: wLoad, Description: wDesc}
+
+		workout, err = service.CreateWorkout(workout)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("Created workout successfully...")
+		fmt.Printf("User: %s\nType: %s\nCalories Burned: %d\nDuration: %d\nWorkload: %d\nDescription: %s\n", workout.User, workout.Type, workout.CaloriesBurned, workout.Duration, workout.Workload, workout.Description)
 		return nil
 	},
 }
 
 func validateFlags(flags *pflag.FlagSet) error {
-	wDur, _ := flags.GetInt("duration")
+	wDur, err := flags.GetInt("duration")
+	if err != nil {
+		return err
+	}
 	if wDur == 0 {
 		return fmt.Errorf("Duration is required. Must be greater than 0")
 	}
-	wCals, _ := flags.GetInt("cals")
+
+	wCals, err := flags.GetInt("cals")
+	if err != nil {
+		return err
+	}
 	if wCals == 0 {
 		return fmt.Errorf("Calories is required. Must be greater than 0")
 	}
-	wType, _ := flags.GetString("type")
+	wType, err := flags.GetString("type")
+	if err != nil {
+		return err
+	}
 	if wType == "" {
 		return fmt.Errorf("Type is required")
+	}
+
+	_, err = flags.GetInt("load")
+	if err != nil {
+		return err
+	}
+
+	_, err = flags.GetString("desc")
+	if err != nil {
+		return err
 	}
 
 	return nil
