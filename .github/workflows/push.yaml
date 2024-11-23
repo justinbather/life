@@ -4,8 +4,6 @@ name: Publish Docker Image
 on:
   push:
    branches: main
-  pull-request:
-    branches: main
 
 env:
   IMAGE_NAME: ${{ github.repository:github.sha }}
