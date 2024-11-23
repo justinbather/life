@@ -7,27 +7,24 @@ package sqlc
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createWorkout = `-- name: CreateWorkout :one
+const createWorkout = `-- name: CreateWorkout :exec
 INSERT INTO workout (type, username, duration, calories_burned, workload, description)
-	VALUES ($1, $2, $3, $4, $5, $6) 
-	RETURNING id, username, type, created_at, duration, calories_burned, workload, description
+VALUES (?, ?, ?, ?, ?, ?)
 `
 
 type CreateWorkoutParams struct {
 	Type           string  `json:"type"`
 	Username       string  `json:"username"`
-	Duration       int32   `json:"duration"`
-	CaloriesBurned int32   `json:"calories_burned"`
-	Workload       int32   `json:"workload"`
+	Duration       int64   `json:"duration"`
+	CaloriesBurned int64   `json:"calories_burned"`
+	Workload       int64   `json:"workload"`
 	Description    *string `json:"description"`
 }
 
-func (q *Queries) CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (Workout, error) {
-	row := q.db.QueryRow(ctx, createWorkout,
+func (q *Queries) CreateWorkout(ctx context.Context, arg CreateWorkoutParams) error {
+	_, err := q.exec(ctx, q.createWorkoutStmt, createWorkout,
 		arg.Type,
 		arg.Username,
 		arg.Duration,
@@ -35,26 +32,15 @@ func (q *Queries) CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (W
 		arg.Workload,
 		arg.Description,
 	)
-	var i Workout
-	err := row.Scan(
-		&i.ID,
-		&i.Username,
-		&i.Type,
-		&i.CreatedAt,
-		&i.Duration,
-		&i.CaloriesBurned,
-		&i.Workload,
-		&i.Description,
-	)
-	return i, err
+	return err
 }
 
 const getAllWorkouts = `-- name: GetAllWorkouts :many
-SELECT id, username, type, created_at, duration, calories_burned, workload, description FROM workout WHERE username = $1
+SELECT id, username, type, created_at, duration, calories_burned, workload, description FROM workout WHERE username = ?
 `
 
 func (q *Queries) GetAllWorkouts(ctx context.Context, username string) ([]Workout, error) {
-	rows, err := q.db.Query(ctx, getAllWorkouts, username)
+	rows, err := q.query(ctx, q.getAllWorkoutsStmt, getAllWorkouts, username)
 	if err != nil {
 		return nil, err
 	}
@@ -75,6 +61,9 @@ func (q *Queries) GetAllWorkouts(ctx context.Context, username string) ([]Workou
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -83,7 +72,7 @@ func (q *Queries) GetAllWorkouts(ctx context.Context, username string) ([]Workou
 }
 
 const getWorkoutsByType = `-- name: GetWorkoutsByType :many
-SELECT id, username, type, created_at, duration, calories_burned, workload, description FROM workout WHERE username = $1 AND type = $2
+SELECT id, username, type, created_at, duration, calories_burned, workload, description FROM workout WHERE username = ? AND type = ?
 `
 
 type GetWorkoutsByTypeParams struct {
@@ -92,7 +81,7 @@ type GetWorkoutsByTypeParams struct {
 }
 
 func (q *Queries) GetWorkoutsByType(ctx context.Context, arg GetWorkoutsByTypeParams) ([]Workout, error) {
-	rows, err := q.db.Query(ctx, getWorkoutsByType, arg.Username, arg.Type)
+	rows, err := q.query(ctx, q.getWorkoutsByTypeStmt, getWorkoutsByType, arg.Username, arg.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -113,6 +102,9 @@ func (q *Queries) GetWorkoutsByType(ctx context.Context, arg GetWorkoutsByTypePa
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -121,17 +113,13 @@ func (q *Queries) GetWorkoutsByType(ctx context.Context, arg GetWorkoutsByTypePa
 }
 
 const getWorkoutsFromDateRange = `-- name: GetWorkoutsFromDateRange :many
-SELECT id, username, type, created_at, duration, calories_burned, workload, description FROM workout WHERE username = $1 AND created_at BETWEEN $2 AND $3
+SELECT id, username, type, created_at, duration, calories_burned, workload, description
+FROM workout
+WHERE username = ? AND created_at BETWEEN ? AND ?
 `
 
-type GetWorkoutsFromDateRangeParams struct {
-	Username    string           `json:"username"`
-	CreatedAt   pgtype.Timestamp `json:"created_at"`
-	CreatedAt_2 pgtype.Timestamp `json:"created_at_2"`
-}
-
-func (q *Queries) GetWorkoutsFromDateRange(ctx context.Context, arg GetWorkoutsFromDateRangeParams) ([]Workout, error) {
-	rows, err := q.db.Query(ctx, getWorkoutsFromDateRange, arg.Username, arg.CreatedAt, arg.CreatedAt_2)
+func (q *Queries) GetWorkoutsFromDateRange(ctx context.Context, username string) ([]Workout, error) {
+	rows, err := q.query(ctx, q.getWorkoutsFromDateRangeStmt, getWorkoutsFromDateRange, username)
 	if err != nil {
 		return nil, err
 	}
@@ -152,6 +140,9 @@ func (q *Queries) GetWorkoutsFromDateRange(ctx context.Context, arg GetWorkoutsF
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

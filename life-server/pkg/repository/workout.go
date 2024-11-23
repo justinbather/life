@@ -10,7 +10,7 @@ import (
 )
 
 type WorkoutRepository interface {
-	CreateWorkout(ctx context.Context, workout model.Workout) (model.Workout, error)
+	CreateWorkout(ctx context.Context, workout model.Workout) error
 	GetWorkoutsByType(ctx context.Context, user, workoutType string) ([]model.Workout, error)
 	GetAllWorkouts(ctx context.Context, user string) ([]model.Workout, error)
 	GetWorkoutsFromDateRange(ctx context.Context, user string, from, to time.Time) ([]model.Workout, error)
@@ -21,14 +21,14 @@ type workoutRepository struct {
 	logger  *prettylog.Logger
 }
 
-func (r *workoutRepository) CreateWorkout(ctx context.Context, workout model.Workout) (model.Workout, error) {
-	res, err := r.queries.CreateWorkout(ctx, sqlc.CreateWorkoutParams{Type: workout.Type, Username: workout.User, Duration: int32(workout.Duration), CaloriesBurned: int32(workout.CaloriesBurned), Workload: int32(workout.Workload), Description: &workout.Description})
+func (r *workoutRepository) CreateWorkout(ctx context.Context, workout model.Workout) error {
+	err := r.queries.CreateWorkout(ctx, sqlc.CreateWorkoutParams{Type: workout.Type, Username: workout.User, Duration: int64(workout.Duration), CaloriesBurned: int64(workout.CaloriesBurned), Workload: int64(workout.Workload), Description: &workout.Description})
 	if err != nil {
 		r.logger.Errorf("Error in WorkoutRepository.CreateWorkout: %s", err)
-		return model.Workout{}, err
+		return err
 	}
 
-	return mapWorkout(res), nil
+	return nil
 }
 
 func (r *workoutRepository) GetWorkoutsByType(ctx context.Context, user, workoutType string) ([]model.Workout, error) {
@@ -52,7 +52,7 @@ func (r *workoutRepository) GetAllWorkouts(ctx context.Context, user string) ([]
 }
 
 func (r *workoutRepository) GetWorkoutsFromDateRange(ctx context.Context, user string, from, to time.Time) ([]model.Workout, error) {
-	records, err := r.queries.GetWorkoutsFromDateRange(ctx, sqlc.GetWorkoutsFromDateRangeParams{Username: user, CreatedAt: mapDate(from), CreatedAt_2: mapDate(to)})
+	records, err := r.queries.GetWorkoutsFromDateRange(ctx, sqlc.{Username: user, CreatedAt: mapDate(from), CreatedAt_2: mapDate(to)})
 	if err != nil {
 		r.logger.Errorf("Error in WorkoutRepository.GetWorkoutsFromDateRange: %s", err)
 		return nil, err

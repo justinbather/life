@@ -1,22 +1,22 @@
 CREATE TABLE workout (
-	id SERIAL PRIMARY KEY,
-	username VARCHAR NOT NULL,
-	type VARCHAR NOT NULL,
-	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	duration INT NOT NULL,
-	calories_burned INT NOT NULL,
-	workload INT NOT NULL,
-	description VARCHAR
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL,
+    type TEXT NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    duration INTEGER NOT NULL,
+    calories_burned INTEGER NOT NULL,
+    workload INTEGER NOT NULL,
+    description TEXT
 );
 
 CREATE TABLE meal (
-	id SERIAL PRIMARY KEY,
-	username VARCHAR NOT NULL,
-	type VARCHAR NOT NULL,
-	calories INT NOT NULL,
-	protein INT NOT NULL,
-	carbs INT NOT NULL,
-	fat INT NOT NULL,
-	description VARCHAR,
-	date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL,
+    type TEXT NOT NULL,
+    calories INTEGER NOT NULL,
+    protein INTEGER NOT NULL,
+    carbs INTEGER NOT NULL,
+    fat INTEGER NOT NULL,
+    description TEXT,
+    date TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL
 );

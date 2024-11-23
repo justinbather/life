@@ -6,27 +6,153 @@ package sqlc
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
+	"database/sql"
+	"fmt"
 )
 
 type DBTX interface {
-	Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
-	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
-	QueryRow(context.Context, string, ...interface{}) pgx.Row
+	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
+	PrepareContext(context.Context, string) (*sql.Stmt, error)
+	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
+	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }
 
 func New(db DBTX) *Queries {
 	return &Queries{db: db}
 }
 
-type Queries struct {
-	db DBTX
+func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
+	q := Queries{db: db}
+	var err error
+	if q.createMealStmt, err = db.PrepareContext(ctx, createMeal); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateMeal: %w", err)
+	}
+	if q.createWorkoutStmt, err = db.PrepareContext(ctx, createWorkout); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateWorkout: %w", err)
+	}
+	if q.getAllWorkoutsStmt, err = db.PrepareContext(ctx, getAllWorkouts); err != nil {
+		return nil, fmt.Errorf("error preparing query GetAllWorkouts: %w", err)
+	}
+	if q.getMealByIdStmt, err = db.PrepareContext(ctx, getMealById); err != nil {
+		return nil, fmt.Errorf("error preparing query GetMealById: %w", err)
+	}
+	if q.getMealsByTypeStmt, err = db.PrepareContext(ctx, getMealsByType); err != nil {
+		return nil, fmt.Errorf("error preparing query GetMealsByType: %w", err)
+	}
+	if q.getMealsFromDateRangeStmt, err = db.PrepareContext(ctx, getMealsFromDateRange); err != nil {
+		return nil, fmt.Errorf("error preparing query GetMealsFromDateRange: %w", err)
+	}
+	if q.getWorkoutsByTypeStmt, err = db.PrepareContext(ctx, getWorkoutsByType); err != nil {
+		return nil, fmt.Errorf("error preparing query GetWorkoutsByType: %w", err)
+	}
+	if q.getWorkoutsFromDateRangeStmt, err = db.PrepareContext(ctx, getWorkoutsFromDateRange); err != nil {
+		return nil, fmt.Errorf("error preparing query GetWorkoutsFromDateRange: %w", err)
+	}
+	return &q, nil
 }
 
-func (q *Queries) WithTx(tx pgx.Tx) *Queries {
+func (q *Queries) Close() error {
+	var err error
+	if q.createMealStmt != nil {
+		if cerr := q.createMealStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createMealStmt: %w", cerr)
+		}
+	}
+	if q.createWorkoutStmt != nil {
+		if cerr := q.createWorkoutStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createWorkoutStmt: %w", cerr)
+		}
+	}
+	if q.getAllWorkoutsStmt != nil {
+		if cerr := q.getAllWorkoutsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getAllWorkoutsStmt: %w", cerr)
+		}
+	}
+	if q.getMealByIdStmt != nil {
+		if cerr := q.getMealByIdStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getMealByIdStmt: %w", cerr)
+		}
+	}
+	if q.getMealsByTypeStmt != nil {
+		if cerr := q.getMealsByTypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getMealsByTypeStmt: %w", cerr)
+		}
+	}
+	if q.getMealsFromDateRangeStmt != nil {
+		if cerr := q.getMealsFromDateRangeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getMealsFromDateRangeStmt: %w", cerr)
+		}
+	}
+	if q.getWorkoutsByTypeStmt != nil {
+		if cerr := q.getWorkoutsByTypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getWorkoutsByTypeStmt: %w", cerr)
+		}
+	}
+	if q.getWorkoutsFromDateRangeStmt != nil {
+		if cerr := q.getWorkoutsFromDateRangeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getWorkoutsFromDateRangeStmt: %w", cerr)
+		}
+	}
+	return err
+}
+
+func (q *Queries) exec(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (sql.Result, error) {
+	switch {
+	case stmt != nil && q.tx != nil:
+		return q.tx.StmtContext(ctx, stmt).ExecContext(ctx, args...)
+	case stmt != nil:
+		return stmt.ExecContext(ctx, args...)
+	default:
+		return q.db.ExecContext(ctx, query, args...)
+	}
+}
+
+func (q *Queries) query(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (*sql.Rows, error) {
+	switch {
+	case stmt != nil && q.tx != nil:
+		return q.tx.StmtContext(ctx, stmt).QueryContext(ctx, args...)
+	case stmt != nil:
+		return stmt.QueryContext(ctx, args...)
+	default:
+		return q.db.QueryContext(ctx, query, args...)
+	}
+}
+
+func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) *sql.Row {
+	switch {
+	case stmt != nil && q.tx != nil:
+		return q.tx.StmtContext(ctx, stmt).QueryRowContext(ctx, args...)
+	case stmt != nil:
+		return stmt.QueryRowContext(ctx, args...)
+	default:
+		return q.db.QueryRowContext(ctx, query, args...)
+	}
+}
+
+type Queries struct {
+	db                           DBTX
+	tx                           *sql.Tx
+	createMealStmt               *sql.Stmt
+	createWorkoutStmt            *sql.Stmt
+	getAllWorkoutsStmt           *sql.Stmt
+	getMealByIdStmt              *sql.Stmt
+	getMealsByTypeStmt           *sql.Stmt
+	getMealsFromDateRangeStmt    *sql.Stmt
+	getWorkoutsByTypeStmt        *sql.Stmt
+	getWorkoutsFromDateRangeStmt *sql.Stmt
+}
+
+func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db: tx,
+		db:                           tx,
+		tx:                           tx,
+		createMealStmt:               q.createMealStmt,
+		createWorkoutStmt:            q.createWorkoutStmt,
+		getAllWorkoutsStmt:           q.getAllWorkoutsStmt,
+		getMealByIdStmt:              q.getMealByIdStmt,
+		getMealsByTypeStmt:           q.getMealsByTypeStmt,
+		getMealsFromDateRangeStmt:    q.getMealsFromDateRangeStmt,
+		getWorkoutsByTypeStmt:        q.getWorkoutsByTypeStmt,
+		getWorkoutsFromDateRangeStmt: q.getWorkoutsFromDateRangeStmt,
 	}
 }

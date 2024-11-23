@@ -1,7 +1,7 @@
 package main
 
 import (
-	"context"
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
@@ -11,14 +11,44 @@ import (
 	"github.com/justinbather/life/life-server/pkg/repository"
 	"github.com/justinbather/life/life-server/pkg/service"
 	"github.com/justinbather/prettylog"
+	"github.com/spf13/viper"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/tursodatabase/go-libsql"
+	_ "github.com/tursodatabase/go-libsql"
 )
 
 func main() {
-	_ = os.Getenv("DB_TOKEN")
-	url := os.Getenv("DB_URL")
+	viper.SetConfigName(".env")
+	viper.SetConfigType("env")
+	viper.AddConfigPath("./")
+	viper.AutomaticEnv()
 
+	err := viper.ReadInConfig()
+	if err != nil {
+		fmt.Printf("Error loading .env file: %v", err)
+	}
+
+	url := viper.GetString("DB_URL")
+	token := viper.GetString("DB_TOKEN")
+
+	dir, err := os.MkdirTemp("", "libsql-*")
+	if err != nil {
+		panic(err)
+	}
+	defer os.RemoveAll(dir)
+
+	// Create a connector for embedded replica
+	connector, err := libsql.NewEmbeddedReplicaConnector(dir+"/test.db", url, libsql.WithAuthToken(token))
+	if err != nil {
+		panic(err)
+	}
+	defer connector.Close()
+
+	// Use sql.OpenDB to create a database instance
+	db := sql.OpenDB(connector)
+	defer db.Close()
+
+	/* postgres
 	db, err := pgx.Connect(context.Background(), url)
 	if err != nil {
 		fmt.Printf("Error making connection to postgres db on app startup. Err: %s\n", err)
@@ -26,6 +56,7 @@ func main() {
 	}
 
 	defer db.Close(context.Background())
+	*/
 
 	logger := prettylog.New()
 
