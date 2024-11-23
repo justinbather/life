@@ -45,4 +45,5 @@ func init() {
 	getCmd.AddCommand(macrosCmd)
 
 	macrosCmd.Flags().String("timeframe", "week", "Optional: Specifies timeframe of the query. Default to week. Options: today|week|month|year")
+	macrosCmd.Flags().String("view", "basic", "Optional: Specifies view type. Defaults to basic. Options: basic|full")
 }
