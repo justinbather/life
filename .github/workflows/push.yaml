@@ -40,3 +40,11 @@ jobs:
           push: true
           tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Trigger Railway deployment
+        run: |
+          curl -X POST https://api.railway.app/v1/project/419424c8-fc49-46d8-a29d-b346e3a83a9b/deploy \
+          -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+          -d '{
+            "dockerImage": "${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          }'
