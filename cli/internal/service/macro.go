@@ -38,8 +38,7 @@ func (m MacroMap) String() string {
 	return fmt.Sprintf("Total Macros\n+Cals: %d\n-Cals: %d\nCals (sum): %d\nProtein: %d\nCarbs: %d\nFat: %d\n", m["calsIn"], m["calsBurned"], m["calsIn"]-m["calsBurned"], m["protein"], m["carbs"], m["fat"])
 }
 
-func GetMacros(user string, tf map[string]string) (MacroMap, error) {
-	// for a time frame, we want calories burned, gained, and p/f/c
+func GetMacros(user string, tf map[string]string) ([]Macro, error) {
 	workouts, err := GetWorkouts(user, tf)
 	if err != nil {
 		return nil, err
@@ -50,50 +49,22 @@ func GetMacros(user string, tf map[string]string) (MacroMap, error) {
 		return nil, err
 	}
 
-	/*
-		given an array of workouts and an array of meals
-		I want an array of macros, which has aggregate data from both resources
+	macros := AggregateMacros(workouts, meals)
 
-		since both resources are date based and we want the data aggregated by date
-		we could normalize dates and create a map of workout arrays and a map of meals, indexed by dates
-
-		then to build our macro array, we need to loop over the keys for each, and create a macro struct for each unique date
-	*/
-
-	totCalsBurned := getCalsBurned(workouts)
-
-	totCalsIn := getSum(func(m model.Meal) int {
-		return m.Calories
-	}, meals)
-	totProtein := getSum(func(m model.Meal) int {
-		return m.Protein
-	}, meals)
-	totCarbs := getSum(func(m model.Meal) int {
-		return m.Carbs
-	}, meals)
-	totFat := getSum(func(m model.Meal) int {
-		return m.Fat
-	}, meals)
-
-	macrosOld := MacroMap{"calsBurned": totCalsBurned, "calsIn": totCalsIn, "protein": totProtein, "carbs": totCarbs, "fat": totFat}
-
-	return macrosOld, nil
+	return macros, nil
 }
 
 func AggregateMacros(workouts []model.Workout, meals []model.Meal) []Macro {
-
+	// Need this in maps so we can grab workouts/ meals unique to a normalized date
 	workoutMap := workoutMap(workouts)
 	mealMap := mealMap(meals)
 
 	macros := make([]Macro, 0)
 
-	// theres some weird stuff going on here with the logic of how we choose which list to base our map indices off of
-	// just because there may be 4 unique dates for meals, and 4 for workouts, but they may be different dates
-	// we can just loop over the workout map, add the relevent data to the date, then do the same after
-
-	// gather workout data
+	// Want macros to be unique by date
 	macroMp := make(map[time.Time]*Macro)
-	// for each unique date in workouts, add all workout data and create entry in map
+
+	// Workouts grouped by by date, add the caloried burned to date in macros map
 	for date, workouts := range workoutMap {
 		cals := 0
 		for _, w := range workouts {
@@ -103,6 +74,7 @@ func AggregateMacros(workouts []model.Workout, meals []model.Meal) []Macro {
 		macroMp[normalizeDate(date)] = &Macro{Date: normalizeDate(date), Workouts: len(workouts), CalsBurned: cals}
 	}
 
+	// For meals, grouped by date, add them to corresponding date in the macros map
 	for date, meals := range mealMap {
 		cals := 0
 		carbs := 0
@@ -124,15 +96,14 @@ func AggregateMacros(workouts []model.Workout, meals []model.Meal) []Macro {
 		} else {
 			macroMp[normalizeDate(date)] = &Macro{Date: normalizeDate(date), CalsIn: cals, Protein: protein, Carbs: carbs, Fat: fat}
 		}
-
 	}
 
+	// will want to sort this
 	for _, macro := range macroMp {
 		macros = append(macros, *macro)
 	}
 
 	return macros
-
 }
 
 // get a map of workouts indexed by date, with a normalized time ie. 2024-10-12T00:00:00Z

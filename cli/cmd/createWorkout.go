@@ -9,6 +9,7 @@ import (
 	"github.com/justinbather/life/cli/internal/service"
 	"github.com/justinbather/life/cli/model"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 // workoutCmd represents the workout command
@@ -22,25 +23,31 @@ var createWorkoutCmd = &cobra.Command{
 			return err
 		}
 
-		wType, _ := cmd.Flags().GetString("type")
-		wDur, _ := cmd.Flags().GetInt("duration")
-		wCals, _ := cmd.Flags().GetInt("cals")
-		wLoad, _ := cmd.Flags().GetInt("load")
-		wDesc, _ := cmd.Flags().GetString("desc")
-		user, _ := cmd.Flags().GetString("user")
+		workout := workoutFromFlags(cmd.Flags())
 
-		workout := model.Workout{User: user, Type: wType, Duration: wDur, CaloriesBurned: wCals, Workload: wLoad, Description: wDesc}
-
-		w, err := service.CreateWorkout(workout)
+		_, err := service.CreateWorkout(workout)
 		if err != nil {
 			fmt.Printf("Error Creating workout: %s", err)
 			return nil
 		}
 
 		fmt.Println("Created workout successfully...")
-		fmt.Printf("User: %s\nType: %s\nCalories Burned: %d\nDuration: %d\nWorkload: %d\nDescription: %s\n", w.User, w.Type, w.CaloriesBurned, w.Duration, w.Workload, w.Description)
+
 		return nil
 	},
+}
+
+func workoutFromFlags(flags *pflag.FlagSet) model.Workout {
+	wType, _ := flags.GetString("type")
+	wDur, _ := flags.GetInt("duration")
+	wCals, _ := flags.GetInt("cals")
+	wLoad, _ := flags.GetInt("load")
+	wDesc, _ := flags.GetString("desc")
+	user, _ := flags.GetString("user")
+
+	workout := model.Workout{User: user, Type: wType, Duration: wDur, CaloriesBurned: wCals, Workload: wLoad, Description: wDesc}
+
+	return workout
 }
 
 func init() {

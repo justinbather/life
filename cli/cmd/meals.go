@@ -4,8 +4,10 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
+	"os"
+	"time"
 
+	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/justinbather/life/cli/internal/service"
 	"github.com/justinbather/life/cli/pkg/timeframe"
 	"github.com/spf13/cobra"
@@ -17,13 +19,11 @@ var mealsCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		flagVal, _ := cmd.Flags().GetString("timeframe")
-		tf, err := timeframe.ParseTimeframe(flagVal)
+		tfVal, _ := cmd.Flags().GetString("timeframe")
+		tf, err := timeframe.ParseTimeframe(tfVal)
 		if err != nil {
 			return err
 		}
-
-		fmt.Printf("Fetching meals from the past %s...\n", tf.String())
 
 		user, _ := cmd.Flags().GetString("user")
 
@@ -34,12 +34,19 @@ var mealsCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Printf("Fetched %d meals successfully...\n", len(meals))
-		fmt.Println("Results")
-		fmt.Println("#   Type    Cals     Protein    Carbs    Fat    Desc")
-		for idx, m := range meals {
-			fmt.Printf("%d   %s    %d         %d      %d      %d     %s\n", idx, m.Type, m.Calories, m.Protein, m.Carbs, m.Fat, m.Description)
+		t := table.NewWriter()
+		t.SetOutputMirror(os.Stdout)
+
+		t.AppendHeader(table.Row{"Date", "Type", "Calories", "Protein (g)", "Carbs (g)", "Fat (g)", "Description"})
+
+		for _, m := range meals {
+			t.AppendRow(table.Row{m.Date.Format(time.DateOnly), m.Type, m.Calories, m.Protein, m.Carbs, m.Fat, m.Description})
+			t.AppendSeparator()
 		}
+
+		t.SortBy([]table.SortBy{{Name: "Date", Mode: table.Asc}})
+
+		t.Render()
 
 		return nil
 	},

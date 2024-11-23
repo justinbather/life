@@ -15,36 +15,31 @@ import (
 // mealCmd represents the meal command
 var createMealCmd = &cobra.Command{
 	Use:   "meal",
-	Short: "Creates a meal with given information",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Creates a new meal",
+	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("Creating new meal...")
+
 		err := cmd.ValidateRequiredFlags()
 		if err != nil {
 			return err
 		}
 
-		meal := getMeal(cmd.Flags())
+		meal := mealFromFlags(cmd.Flags())
 
-		created, err := service.CreateMeal(meal)
+		_, err = service.CreateMeal(meal)
 		if err != nil {
 			fmt.Printf("Error creating meal: %s", err)
 			return nil
 		}
 
 		fmt.Println("Created meal successfully")
-		fmt.Printf("Type: %s\nCals: %d\nProtein: %d\nCarbs: %d\nFat: %d\nDescription: %s\n", created.Type, created.Calories, created.Protein, created.Carbs, created.Fat, created.Description)
 
 		return nil
 	},
 }
 
-func getMeal(flags *pflag.FlagSet) model.Meal {
+func mealFromFlags(flags *pflag.FlagSet) model.Meal {
 	_type, _ := flags.GetString("type")
 	cals, _ := flags.GetInt("cals")
 	protein, _ := flags.GetInt("protein")

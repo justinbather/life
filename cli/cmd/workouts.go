@@ -5,7 +5,10 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"time"
 
+	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/justinbather/life/cli/internal/service"
 	"github.com/justinbather/life/cli/pkg/timeframe"
 	"github.com/spf13/cobra"
@@ -17,17 +20,15 @@ var workoutsCmd = &cobra.Command{
 	Short: "",
 	Long:  "",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		flagVal, _ := cmd.Flags().GetString("timeframe")
-
-		tf, err := timeframe.ParseTimeframe(flagVal)
+		tfVal, _ := cmd.Flags().GetString("timeframe")
+		tf, err := timeframe.ParseTimeframe(tfVal)
 		if err != nil {
 			return err
 		}
 
 		user, _ := cmd.Flags().GetString("user")
-		dateMap := tf.GetRange()
 
-		fmt.Println("Fetching workouts...")
+		dateMap := tf.GetRange()
 
 		workouts, err := service.GetWorkouts(user, dateMap)
 		if err != nil {
@@ -39,12 +40,18 @@ var workoutsCmd = &cobra.Command{
 			return nil
 		}
 
-		fmt.Println("Fetched workouts successfully...")
-		fmt.Println("Results:")
-		fmt.Println("#      Type       Cals      Description")
-		for idx, w := range workouts {
-			fmt.Printf("%d      %s       %d      %s\n", idx, w.Type, w.CaloriesBurned, w.Description)
+		t := table.NewWriter()
+		t.SetOutputMirror(os.Stdout)
+		t.AppendHeader(table.Row{"Date", "Type", "Calories", "Intensity", "Duration (mins)", "Description"})
+
+		for _, w := range workouts {
+			t.AppendRow(table.Row{w.Date.Format(time.DateOnly), w.Type, w.CaloriesBurned, w.Workload, w.Duration, w.Description})
+			t.AppendSeparator()
 		}
+
+		t.SortBy([]table.SortBy{{Name: "Date", Mode: table.Asc}})
+
+		t.Render()
 
 		return nil
 	},

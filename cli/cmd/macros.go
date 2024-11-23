@@ -4,8 +4,10 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
+	"os"
+	"time"
 
+	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/justinbather/life/cli/internal/service"
 	"github.com/justinbather/life/cli/pkg/timeframe"
 	"github.com/spf13/cobra"
@@ -14,7 +16,7 @@ import (
 // macrosCmd represents the macros command
 var macrosCmd = &cobra.Command{
 	Use:   "macros",
-	Short: "",
+	Short: "retrieves your aggregated history of meals and workouts",
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		tfVal, _ := cmd.Flags().GetString("timeframe")
@@ -22,8 +24,6 @@ var macrosCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-
-		fmt.Printf("Fetching macros from the past %s...\n", tf.String())
 
 		user, _ := cmd.Flags().GetString("user")
 
@@ -34,8 +34,29 @@ var macrosCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Println("Fetched macros successfully...")
-		fmt.Println(macros)
+		t := table.NewWriter()
+		t.SetOutputMirror(os.Stdout)
+		t.AppendHeader(table.Row{"Date", "Calories", "Protein (g)", "Carbs (g)", "Fat (g)", "Calories Burned", "# of workouts"})
+
+		totalCalsIn := 0
+		totalCalsOut := 0
+		totalWorkouts := 0
+
+		for _, m := range macros {
+			totalCalsOut += m.CalsBurned
+			totalCalsIn += m.CalsIn
+			totalWorkouts += m.Workouts
+
+			t.AppendRow(table.Row{m.Date.Format(time.DateOnly), m.CalsIn, m.Protein, m.Carbs, m.Fat, m.CalsBurned, m.Workouts})
+			t.AppendSeparator()
+		}
+
+		t.AppendRow(table.Row{"Totals", "Calories (net)", "# of workouts"})
+		t.AppendFooter(table.Row{"", totalCalsIn - totalCalsOut, totalWorkouts})
+
+		t.SortBy([]table.SortBy{{Name: "Date", Mode: table.Asc}})
+
+		t.Render()
 
 		return nil
 	},
