@@ -16,12 +16,15 @@ import (
 )
 
 func main() {
+	_ = os.Getenv("DB_TOKEN")
+	url := os.Getenv("DB_URL")
 
-	db, err := pgx.Connect(context.Background(), os.Getenv("DB_URL"))
+	db, err := pgx.Connect(context.Background(), url)
 	if err != nil {
 		fmt.Printf("Error making connection to postgres db on app startup. Err: %s\n", err)
 		os.Exit(1)
 	}
+
 	defer db.Close(context.Background())
 
 	logger := prettylog.New()

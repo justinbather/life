@@ -45,6 +45,7 @@ func (r *mealRepository) GetMealById(ctx context.Context, id int) (model.Meal, e
 }
 
 func (r *mealRepository) GetMealsFromDateRange(ctx context.Context, user string, from time.Time, to time.Time) ([]model.Meal, error) {
+	r.logger.Infof("Fetching meals from %s to %s", from, to)
 	records, err := r.queries.GetMealsFromDateRange(ctx, sqlc.GetMealsFromDateRangeParams{Username: user, Date: mapDate(from), Date_2: mapDate(to)})
 	if err != nil {
 		r.logger.Errorf("Error getting meals from date range: ", err)

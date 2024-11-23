@@ -3,6 +3,7 @@ package http
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/justinbather/life/life-server/pkg/model"
@@ -27,6 +28,10 @@ func (h *mealHandler) CreateMeal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.Date.IsZero() {
+		req.Date = time.Now()
+	}
+
 	meal, err := h.service.CreateMeal(r.Context(), req)
 	if err != nil {
 		h.logger.Errorf("Error creating meal: %s", err)
@@ -34,6 +39,7 @@ func (h *mealHandler) CreateMeal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.logger.Infof("Created meal successfully with ID=%d", meal.Id)
 	err = encode(w, r, 201, meal)
 	if err != nil {
 		h.logger.Errorf("Error encoding created meal: %s", err)
