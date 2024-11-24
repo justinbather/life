@@ -10,4 +10,4 @@ RUN go build cmd/main.go
 EXPOSE 8080
 
 # Set the entry point for the container
-CMD ["./cmd/main"]
+CMD ["./main"]
