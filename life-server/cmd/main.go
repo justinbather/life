@@ -21,8 +21,6 @@ import (
 func main() {
 	url := os.Getenv("DATABASE_URL")
 
-	fmt.Println("url: ", url)
-
 	m, err := migrate.New(
 		"file://./db/migrations",
 		url)
