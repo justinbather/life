@@ -6,6 +6,9 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/golang-migrate/migrate"
+	_ "github.com/golang-migrate/migrate/database/postgres"
+	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/gorilla/mux"
 	handler "github.com/justinbather/life/life-server/pkg/http"
 	"github.com/justinbather/life/life-server/pkg/repository"
@@ -16,8 +19,22 @@ import (
 )
 
 func main() {
-	_ = os.Getenv("DB_TOKEN")
-	url := os.Getenv("DB_URL")
+	url := os.Getenv("DATABASE_URL")
+
+	fmt.Println("url: ", url)
+
+	m, err := migrate.New(
+		"file://./db/migrations",
+		url)
+	if err != nil {
+		fmt.Printf("Error building migration connection: %s", err)
+		os.Exit(1)
+	}
+
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		fmt.Printf("Error running migration: %s\n", err)
+		os.Exit(1)
+	}
 
 	db, err := pgx.Connect(context.Background(), url)
 	if err != nil {

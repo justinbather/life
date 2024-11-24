@@ -5,11 +5,9 @@ WORKDIR /app
 
 COPY ./life-server/ .
 
-WORKDIR /app/cmd
-
-RUN go build main.go
+RUN go build cmd/main.go
 
 EXPOSE 8080
 
 # Set the entry point for the container
-CMD ["./main"]
+CMD ["./cmd/main"]

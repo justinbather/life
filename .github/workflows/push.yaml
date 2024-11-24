@@ -43,7 +43,7 @@ jobs:
 
       - name: Trigger Railway deployment
         run: |
-          curl -X POST https://api.railway.app/v1/project/419424c8-fc49-46d8-a29d-b346e3a83a9b/deploy \
+          curl -X POST https://api.railway.app/v1/project/50c49bc7-e4ae-4228-8ecc-3273e50986ec/deploy \
           -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
           -d '{
             "dockerImage": "${{ env.IMAGE_NAME }}:${{ github.sha }}"
