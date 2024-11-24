@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/justinbather/life/cli/model"
+	"github.com/justinbather/life/life/model"
 )
 
 // make sure we can have a macro built by joined meals and workouts, a macro from just a workout, and one from just a meal

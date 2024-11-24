@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/justinbather/life/cli/model"
+	"github.com/justinbather/life/life/model"
 )
 
 /*

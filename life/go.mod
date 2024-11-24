@@ -1,4 +1,4 @@
-module github.com/justinbather/life/cli
+module github.com/justinbather/life/life
 
 go 1.22.0
 

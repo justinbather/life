@@ -6,8 +6,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/justinbather/life/cli/internal/service"
-	"github.com/justinbather/life/cli/model"
+	"github.com/justinbather/life/life/internal/service"
+	"github.com/justinbather/life/life/model"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )

@@ -3,7 +3,7 @@ package http
 import (
 	"fmt"
 
-	"github.com/justinbather/life/cli/model"
+	"github.com/justinbather/life/life/model"
 )
 
 var workoutUri string = "/workouts"

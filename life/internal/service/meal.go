@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/justinbather/life/cli/internal/http"
-	"github.com/justinbather/life/cli/model"
+	"github.com/justinbather/life/life/internal/http"
+	"github.com/justinbather/life/life/model"
 )
 
 func CreateMeal(meal model.Meal) (model.Meal, error) {

@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/jedib0t/go-pretty/v6/table"
-	"github.com/justinbather/life/cli/internal/service"
-	"github.com/justinbather/life/cli/pkg/timeframe"
+	"github.com/justinbather/life/life/internal/service"
+	"github.com/justinbather/life/life/pkg/timeframe"
 	"github.com/spf13/cobra"
 )
 

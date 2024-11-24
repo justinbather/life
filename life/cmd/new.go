@@ -4,8 +4,6 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -16,7 +14,6 @@ var newCmd = &cobra.Command{
 	Long: `Create a new resource using life new <resource>
 	example: life new workout -> creates a new workout`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("new called")
 	},
 }
 
