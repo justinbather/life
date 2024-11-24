@@ -1,29 +1,22 @@
-# Life - Track workouts, meals, and thoughts, all from the terminal
-> Basically, I didn't want to write js
+# Life - Track workouts, meals, and macros, all from the terminal
 
-## Structure
+## Install the CLI
+`go install github.com/justinbather/life/life@latest`
 
-- life-server/
-> Contains the server, obviously
+## Getting around
+- `life-server/`
+> Contains the server
+> Currently privately hosted until auth is baked into the cli.
 
-- cli/
-> Contains the CLI, clearly
+- `life/`
+> Contains the CLI.
+> See readme in there for usage.
 
-Not Priority
-- life-frontend/
-> Contains the terminal-like frontend
+## Lazy?
+Fork the repo, deploy anywhere (or host locally)
+All you need to do is configure the `API_URL` at `~/.life.yaml` (if deploying), and setup postgres
 
-## MVP
-- Can upload workouts
-- Can fetch workout data
-    - by date, incl range
-
-- Can upload meals storing cals and macros
-- Can fetch meals data by date range
-
-- Can do the above from a cli
-- Deployed
-## Future
-- Upload some sort of score for the day based on how you feel
+## Make it not suck
+- Build in auth, with global config
 - Generate a monthly or weekly report of everything
 - Reminders to do this stuff
