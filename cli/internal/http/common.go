@@ -6,9 +6,35 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
+
+	"github.com/spf13/viper"
 )
 
-var baseUri string = "http://localhost:8080"
+var baseUri string
+
+func init() {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Printf("Failed to get home directory: %v", err)
+		os.Exit(1)
+	}
+	configPath := filepath.Join(homeDir, ".life.yaml")
+
+	viper.SetConfigType("yaml")
+	viper.SetConfigFile(configPath)
+
+	// Read in the .env file
+	if err := viper.ReadInConfig(); err != nil {
+		fmt.Printf("Error reading .env file: %v", err)
+		os.Exit(1)
+	}
+	baseUri = viper.GetString("API_URL")
+	if baseUri == "" {
+		baseUri = "http://localhost:8080"
+	}
+}
 
 func create[T any](v T, uri string) (T, error) {
 	var idk T
