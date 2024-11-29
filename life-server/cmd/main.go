@@ -47,9 +47,11 @@ func main() {
 
 	healthHandler := handlers.NewHealthHandler(logger)
 
+	authService := service.NewAuthService()
+
 	uRepository := repository.NewUserRepository(db, logger)
 	uService := service.NewUserService(uRepository)
-	uHandler := handlers.NewUserHandler(uService, logger)
+	uHandler := handlers.NewUserHandler(uService, authService, logger)
 
 	wRepository := repository.NewWorkoutRepository(db, logger)
 	wService := service.NewWorkoutService(wRepository, logger)

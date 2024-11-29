@@ -36,8 +36,6 @@ func (s *userService) CreateUser(ctx context.Context, username, password string)
 		return model.User{}, err
 	}
 
-	user.Password = "***"
-
 	return user, nil
 }
 func (s *userService) GetUserById(ctx context.Context, id string) (model.User, error) {
@@ -54,8 +52,6 @@ func (s *userService) GetUserByUsernameAndPass(ctx context.Context, username, pa
 	if !ok {
 		return model.User{}, fmt.Errorf("No user found")
 	}
-
-	user.Password = "***"
 
 	return user, nil
 }
