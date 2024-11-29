@@ -48,7 +48,7 @@ func main() {
 	healthHandler := handlers.NewHealthHandler(logger)
 
 	authService := service.NewAuthService()
-	authMiddleware := middleware.NewAuthMiddleware(authService)
+	mw := middleware.NewMiddleware(authService, logger)
 
 	uRepository := repository.NewUserRepository(db, logger)
 	uService := service.NewUserService(uRepository)
@@ -62,23 +62,30 @@ func main() {
 	mService := service.NewMealService(mRepository, logger)
 	mHandler := handlers.NewMealHandler(mService, logger)
 
-	r := mux.NewRouter()
-	r.Handle("/health-check", authMiddleware.Protect(http.HandlerFunc(healthHandler.HealthCheck))).Methods(http.MethodGet)
+	global := mux.NewRouter()
 
-	r.HandleFunc("/auth/login", uHandler.Login).Methods(http.MethodPost)
-	r.HandleFunc("/auth/signup", uHandler.Signup).Methods(http.MethodPost)
+	global.Use(mw.Recoverer)
+	global.Use(mw.Tracer)
 
-	r.HandleFunc("/workouts/{user}/{from}/{to}", wHandler.GetWorkoutsFromDateRange).Methods(http.MethodGet)
-	r.HandleFunc("/workouts/{user}/{type}", wHandler.GetWorkoutsByType).Methods(http.MethodGet)
-	r.HandleFunc("/workouts/{user}", wHandler.GetAllWorkouts).Methods(http.MethodGet)
-	r.HandleFunc("/workouts", wHandler.CreateWorkout).Methods(http.MethodPost)
+	// Non-protected routes
+	global.Handle("/health-check", mw.Protect(http.HandlerFunc(healthHandler.HealthCheck))).Methods(http.MethodGet)
+	global.HandleFunc("/auth/login", uHandler.Login).Methods(http.MethodPost)
+	global.HandleFunc("/auth/signup", uHandler.Signup).Methods(http.MethodPost)
 
-	r.HandleFunc("/meals/{id}", mHandler.GetMealById).Methods(http.MethodGet)
-	r.HandleFunc("/meals/{user}/{from}/{to}", mHandler.GetMealsFromDateRange).Methods(http.MethodGet)
-	r.HandleFunc("/meals", mHandler.CreateMeal).Methods(http.MethodPost)
+	protected := global.PathPrefix("/").Subrouter()
+	protected.Use(mw.Protect)
+
+	protected.HandleFunc("/workouts/{user}/{from}/{to}", wHandler.GetWorkoutsFromDateRange).Methods(http.MethodGet)
+	protected.HandleFunc("/workouts/{user}/{type}", wHandler.GetWorkoutsByType).Methods(http.MethodGet)
+	protected.HandleFunc("/workouts/{user}", wHandler.GetAllWorkouts).Methods(http.MethodGet)
+	protected.HandleFunc("/workouts", wHandler.CreateWorkout).Methods(http.MethodPost)
+
+	protected.HandleFunc("/meals/{id}", mHandler.GetMealById).Methods(http.MethodGet)
+	protected.HandleFunc("/meals/{user}/{from}/{to}", mHandler.GetMealsFromDateRange).Methods(http.MethodGet)
+	protected.HandleFunc("/meals", mHandler.CreateMeal).Methods(http.MethodPost)
 
 	fmt.Println("Life Server Running on 8080")
-	if err := http.ListenAndServe(":8080", r); err != nil {
+	if err := http.ListenAndServe(":8080", global); err != nil {
 		panic(err)
 	}
 }

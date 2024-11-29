@@ -4,29 +4,34 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/justinbather/life/life-server/pkg/service"
+	"github.com/justinbather/prettylog"
 )
 
 type ctxKey string
 
 const UserCtxKey ctxKey = "user"
 
-type AuthMiddleware interface {
+type Middleware interface {
 	Protect(next http.Handler) http.Handler
+	Recoverer(next http.Handler) http.Handler
+	Tracer(next http.Handler) http.Handler
 }
 
-func NewAuthMiddleware(authService service.AuthService) AuthMiddleware {
-	return &authMiddleware{authService: authService}
+func NewMiddleware(authService service.AuthService, logger *prettylog.Logger) Middleware {
+	return &middleware{authService: authService, logger: logger}
 }
 
-type authMiddleware struct {
+type middleware struct {
 	authService service.AuthService
+	logger      *prettylog.Logger
 }
 
 // Authentication Middleware
 // Pulls and verifys the Bearer token from request header
-func (m *authMiddleware) Protect(next http.Handler) http.Handler {
+func (m *middleware) Protect(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		jwt, ok := parseHeader(r.Header)
 		if !ok {
@@ -43,6 +48,30 @@ func (m *authMiddleware) Protect(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), UserCtxKey, userId)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// Recovers any panics and returns a 500 error code to the user
+func (m *middleware) Recoverer(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if rec := recover(); rec != nil {
+				m.logger.Errorf("Recovery middleware caught a panic. %v", rec)
+				http.Error(w, "Internal Server Error.", http.StatusInternalServerError)
+			}
+		}()
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (m *middleware) Tracer(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		m.logger.Infof("Starting Request")
+		start := time.Now()
+		next.ServeHTTP(w, r)
+		m.logger.Infof("Completed request in %f seconds", time.Since(start).Seconds())
+
 	})
 }
 
@@ -66,9 +95,9 @@ func parseHeader(header http.Header) (string, bool) {
 }
 
 func parseErr(w http.ResponseWriter) {
-	http.Error(w, "Error parsing authentication token", http.StatusUnauthorized)
+	http.Error(w, "Error parsing authentication token", http.StatusBadRequest)
 }
 
 func authErr(w http.ResponseWriter) {
-	http.Error(w, "Error authenticating", http.StatusUnauthorized)
+	http.Error(w, "Unauthorized", http.StatusUnauthorized)
 }
