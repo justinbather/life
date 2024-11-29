@@ -1,4 +1,4 @@
-package http
+package handlers
 
 import (
 	"encoding/json"
@@ -14,7 +14,7 @@ import (
 var ERR_USER_NOT_FOUND = errors.New("User not found")
 var ERR_INVALID_DATE = errors.New("Invalid date")
 
-func encode[T any](w http.ResponseWriter, r *http.Request, status int, v T) error {
+func encode[T any](w http.ResponseWriter, _ *http.Request, status int, v T) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 

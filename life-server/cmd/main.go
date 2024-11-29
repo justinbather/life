@@ -10,7 +10,8 @@ import (
 	_ "github.com/golang-migrate/migrate/database/postgres"
 	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/gorilla/mux"
-	handler "github.com/justinbather/life/life-server/pkg/http"
+	"github.com/justinbather/life/life-server/pkg/http/handlers"
+	"github.com/justinbather/life/life-server/pkg/http/middleware"
 	"github.com/justinbather/life/life-server/pkg/repository"
 	"github.com/justinbather/life/life-server/pkg/service"
 	"github.com/justinbather/prettylog"
@@ -44,15 +45,19 @@ func main() {
 
 	logger := prettylog.New()
 
+	healthHandler := handlers.NewHealthHandler(logger)
+
 	wRepository := repository.NewWorkoutRepository(db, logger)
 	wService := service.NewWorkoutService(wRepository, logger)
-	wHandler := handler.NewWorkoutHandler(wService, logger)
+	wHandler := handlers.NewWorkoutHandler(wService, logger)
 
 	mRepository := repository.NewMealRepository(db, logger)
 	mService := service.NewMealService(mRepository, logger)
-	mHandler := handler.NewMealHandler(mService, logger)
+	mHandler := handlers.NewMealHandler(mService, logger)
 
 	r := mux.NewRouter()
+	r.Handle("/health-check", middleware.AuthMiddleware(http.HandlerFunc(healthHandler.HealthCheck))).Methods(http.MethodGet)
+
 	r.HandleFunc("/workouts/{user}/{from}/{to}", wHandler.GetWorkoutsFromDateRange).Methods(http.MethodGet)
 	r.HandleFunc("/workouts/{user}/{type}", wHandler.GetWorkoutsByType).Methods(http.MethodGet)
 	r.HandleFunc("/workouts/{user}", wHandler.GetAllWorkouts).Methods(http.MethodGet)
