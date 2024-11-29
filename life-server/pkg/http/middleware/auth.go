@@ -2,11 +2,16 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/justinbather/life/life-server/pkg/service"
 )
+
+type ctxKey string
+
+const UserCtxKey ctxKey = "user"
 
 type AuthMiddleware interface {
 	Protect(next http.Handler) http.Handler
@@ -32,21 +37,37 @@ func (m *authMiddleware) Protect(next http.Handler) http.Handler {
 
 		if len(tokenArr) != 2 {
 			parseErr(w)
+			return
 		}
 
 		if tokenArr[0] != "Bearer" {
 			parseErr(w)
+			return
 		}
 
 		userId, err := m.authService.Authenticate(tokenArr[1])
 		if err != nil {
 			authErr(w)
+			return
 		}
 
-		r.WithContext(context.WithValue(r.Context(), "userId", userId))
+		fmt.Printf("Authenticated user: %s\n", userId)
 
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), UserCtxKey, userId)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func GetUserFromCtx(ctx context.Context) (string, error) {
+	user := ctx.Value(UserCtxKey)
+	if user == nil {
+		return "", fmt.Errorf("Error getting user from context")
+	}
+
+	fmt.Printf("User from context: %v\n", user)
+
+	return user.(string), nil
 }
 
 func parseErr(w http.ResponseWriter) {

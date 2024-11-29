@@ -41,4 +41,6 @@ func Test_parse_returnsId(t *testing.T) {
 	if id != ulid {
 		t.Fatalf("Expected ulid to be returned from token, ulid: %s, parse returned %s", ulid, id)
 	}
+
+	t.Logf("before %s, after %s", ulid, id)
 }

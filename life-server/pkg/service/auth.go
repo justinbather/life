@@ -21,11 +21,13 @@ func NewAuthService() AuthService {
 type authService struct{}
 
 func (s *authService) Authenticate(tokenString string) (string, error) {
+	fmt.Printf("token into authenticate: %s", tokenString)
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return secret_key, nil
 	})
 	if err != nil {
-		return "", nil
+		fmt.Printf("Error parsing JWT: %s", err)
+		return "", err
 	}
 
 	if token.Method.Alg() != jwt.SigningMethodHS256.Alg() {
@@ -33,12 +35,13 @@ func (s *authService) Authenticate(tokenString string) (string, error) {
 	}
 
 	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
-		if claims.Expires.Before(time.Now()) {
+		if claims.RegisteredClaims.ExpiresAt.Before(time.Now()) {
 			return "", fmt.Errorf("Expired token. Reauthenticate")
 		}
 
 		return claims.UserId, nil
 	} else {
+
 		return "", fmt.Errorf("Invalid token")
 	}
 }
@@ -57,6 +60,7 @@ func (s *authService) CreateToken(id string) (string, time.Time, error) {
 		Expires: expires,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expires),
+			Issuer:    "life-server",
 		},
 	}
 
