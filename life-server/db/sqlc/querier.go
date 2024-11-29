@@ -17,7 +17,7 @@ type Querier interface {
 	GetMealsByType(ctx context.Context, arg GetMealsByTypeParams) ([]Meal, error)
 	GetMealsFromDateRange(ctx context.Context, arg GetMealsFromDateRangeParams) ([]Meal, error)
 	GetUserById(ctx context.Context, id string) (User, error)
-	GetUserByUsernameAndPass(ctx context.Context, arg GetUserByUsernameAndPassParams) (User, error)
+	GetUserByUsername(ctx context.Context, username string) (User, error)
 	GetWorkoutsByType(ctx context.Context, arg GetWorkoutsByTypeParams) ([]Workout, error)
 	GetWorkoutsFromDateRange(ctx context.Context, arg GetWorkoutsFromDateRangeParams) ([]Workout, error)
 }

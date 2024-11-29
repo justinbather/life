@@ -11,7 +11,7 @@ import (
 type UserRespository interface {
 	CreateUser(ctx context.Context, user model.User) (model.User, error)
 	GetUserById(ctx context.Context, id string) (model.User, error)
-	GetUserByUsernameAndPass(ctx context.Context, username, password string) (model.User, error)
+	GetUserByUsername(ctx context.Context, username string) (model.User, error)
 }
 
 type userRepository struct {
@@ -36,8 +36,8 @@ func (r *userRepository) GetUserById(ctx context.Context, id string) (model.User
 	return model.User{}, nil
 }
 
-func (r *userRepository) GetUserByUsernameAndPass(ctx context.Context, username, password string) (model.User, error) {
-	record, err := r.queries.GetUserByUsernameAndPass(ctx, sqlc.GetUserByUsernameAndPassParams{Username: username, Password: password})
+func (r *userRepository) GetUserByUsername(ctx context.Context, username string) (model.User, error) {
+	record, err := r.queries.GetUserByUsername(ctx, username)
 	if err != nil {
 		return model.User{}, err
 	}

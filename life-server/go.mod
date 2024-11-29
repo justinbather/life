@@ -8,6 +8,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/justinbather/prettylog v0.0.0-20241115152757-e5d306d87c86
 	github.com/oklog/ulid/v2 v2.1.0
+	golang.org/x/crypto v0.29.0
 )
 
 require (
@@ -26,6 +27,5 @@ require (
 	github.com/stretchr/testify v1.9.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.57.0 // indirect
 	go.opentelemetry.io/otel/trace v1.32.0 // indirect
-	golang.org/x/crypto v0.29.0 // indirect
 	golang.org/x/text v0.20.0 // indirect
 )
