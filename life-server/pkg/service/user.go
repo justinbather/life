@@ -46,6 +46,7 @@ func (s *userService) GetUserById(ctx context.Context, id string) (model.User, e
 func (s *userService) GetUserByUsernameAndPass(ctx context.Context, username, password string) (model.User, error) {
 	user, err := s.repository.GetUserByUsername(ctx, username)
 	if err != nil {
+		simulateHash()
 		return model.User{}, err
 	}
 
@@ -57,6 +58,13 @@ func (s *userService) GetUserByUsernameAndPass(ctx context.Context, username, pa
 	user.Password = "***"
 
 	return user, nil
+}
+
+// hashes and compares the hash to simulate the checking of a hash during login.
+// prevents someone from being able to guess a correct username based on the response time of a request
+func simulateHash() {
+	hash, _ := hashPassword("simulatedstringtohash")
+	checkPasswordHash("simulatedstringtohash", hash)
 }
 
 func hashPassword(secret string) (string, error) {
