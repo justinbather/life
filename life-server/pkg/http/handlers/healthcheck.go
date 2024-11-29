@@ -3,7 +3,6 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/justinbather/life/life-server/pkg/http/middleware"
 	"github.com/justinbather/prettylog"
 )
 
@@ -17,8 +16,6 @@ func NewHealthHandler(logger *prettylog.Logger) *healthHandler {
 
 func (h *healthHandler) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	h.logger.Infof("Health Check: Service Healthy")
-
-	user := r.Context().Value(middleware.UserCtxKey)
 
 	w.WriteHeader(http.StatusOK)
 }

@@ -20,13 +20,17 @@ func NewAuthService() AuthService {
 
 type authService struct{}
 
+type CustomClaims struct {
+	UserId  string    `json:"userId"`
+	Expires time.Time `json:"expires"`
+	jwt.RegisteredClaims
+}
+
 func (s *authService) Authenticate(tokenString string) (string, error) {
-	fmt.Printf("token into authenticate: %s", tokenString)
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return secret_key, nil
 	})
 	if err != nil {
-		fmt.Printf("Error parsing JWT: %s", err)
 		return "", err
 	}
 
@@ -44,12 +48,6 @@ func (s *authService) Authenticate(tokenString string) (string, error) {
 
 		return "", fmt.Errorf("Invalid token")
 	}
-}
-
-type CustomClaims struct {
-	UserId  string    `json:"userId"`
-	Expires time.Time `json:"expires"`
-	jwt.RegisteredClaims
 }
 
 func (s *authService) CreateToken(id string) (string, time.Time, error) {
@@ -70,5 +68,6 @@ func (s *authService) CreateToken(id string) (string, time.Time, error) {
 	if err != nil {
 		return "", time.Time{}, err
 	}
+
 	return signed, expires, nil
 }
