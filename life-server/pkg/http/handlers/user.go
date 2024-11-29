@@ -65,7 +65,7 @@ func (h *userHandler) sendAuth(w http.ResponseWriter, r *http.Request, user mode
 
 	signed, expires, err := h.authService.CreateToken(user.Id)
 	if err != nil {
-		http.Error(w, "TODO: Error signing key", http.StatusInternalServerError)
+		http.Error(w, "Authentication Error", http.StatusInternalServerError)
 		return
 	}
 

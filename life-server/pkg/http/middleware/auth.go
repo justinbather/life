@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -25,33 +24,21 @@ type authMiddleware struct {
 	authService service.AuthService
 }
 
+// Authentication Middleware
+// Pulls and verifys the Bearer token from request header
 func (m *authMiddleware) Protect(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token := r.Header.Get("Authorization")
-		if token == "" {
+		jwt, ok := parseHeader(r.Header)
+		if !ok {
 			parseErr(w)
 			return
 		}
 
-		tokenArr := strings.Split(token, " ")
-
-		if len(tokenArr) != 2 {
-			parseErr(w)
-			return
-		}
-
-		if tokenArr[0] != "Bearer" {
-			parseErr(w)
-			return
-		}
-
-		userId, err := m.authService.Authenticate(tokenArr[1])
+		userId, err := m.authService.Authenticate(jwt)
 		if err != nil {
 			authErr(w)
 			return
 		}
-
-		fmt.Printf("Authenticated user: %s\n", userId)
 
 		ctx := context.WithValue(r.Context(), UserCtxKey, userId)
 
@@ -59,15 +46,23 @@ func (m *authMiddleware) Protect(next http.Handler) http.Handler {
 	})
 }
 
-func GetUserFromCtx(ctx context.Context) (string, error) {
-	user := ctx.Value(UserCtxKey)
-	if user == nil {
-		return "", fmt.Errorf("Error getting user from context")
+func parseHeader(header http.Header) (string, bool) {
+	token := header.Get("Authorization")
+	if token == "" {
+		return "", false
 	}
 
-	fmt.Printf("User from context: %v\n", user)
+	tokenArr := strings.Split(token, " ")
 
-	return user.(string), nil
+	if len(tokenArr) != 2 {
+		return "", false
+	}
+
+	if tokenArr[0] != "Bearer" {
+		return "", false
+	}
+
+	return tokenArr[1], true
 }
 
 func parseErr(w http.ResponseWriter) {
