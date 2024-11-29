@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 
+	"github.com/justinbather/life/life-server/pkg/model"
 	"github.com/justinbather/life/life-server/pkg/service"
 	"github.com/justinbather/prettylog"
 )
@@ -23,8 +25,8 @@ type UserRequest struct {
 }
 
 type UserResponse struct {
-	Token   string `json:"token"`
-	Expires int64  `json:"expires"`
+	Token   string    `json:"token"`
+	Expires time.Time `json:"expires"`
 }
 
 func (h *userHandler) Signup(w http.ResponseWriter, r *http.Request) {
@@ -40,11 +42,7 @@ func (h *userHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = encode(w, r, 201, user)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	h.sendAuth(w, r, user)
 }
 
 func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -59,6 +57,11 @@ func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Username and/or password incorrect", http.StatusNotFound)
 		return
 	}
+
+	h.sendAuth(w, r, user)
+}
+
+func (h *userHandler) sendAuth(w http.ResponseWriter, r *http.Request, user model.User) {
 
 	signed, expires, err := h.authService.CreateToken(user.Id)
 	if err != nil {

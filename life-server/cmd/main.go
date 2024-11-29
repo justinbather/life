@@ -48,6 +48,7 @@ func main() {
 	healthHandler := handlers.NewHealthHandler(logger)
 
 	authService := service.NewAuthService()
+	authMiddleware := middleware.NewAuthMiddleware(authService)
 
 	uRepository := repository.NewUserRepository(db, logger)
 	uService := service.NewUserService(uRepository)
@@ -62,7 +63,7 @@ func main() {
 	mHandler := handlers.NewMealHandler(mService, logger)
 
 	r := mux.NewRouter()
-	r.Handle("/health-check", middleware.AuthMiddleware(http.HandlerFunc(healthHandler.HealthCheck))).Methods(http.MethodGet)
+	r.Handle("/health-check", authMiddleware.Protect(http.HandlerFunc(healthHandler.HealthCheck))).Methods(http.MethodGet)
 
 	r.HandleFunc("/auth/login", uHandler.Login).Methods(http.MethodPost)
 	r.HandleFunc("/auth/signup", uHandler.Signup).Methods(http.MethodPost)

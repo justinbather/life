@@ -16,5 +16,6 @@ func NewHealthHandler(logger *prettylog.Logger) *healthHandler {
 
 func (h *healthHandler) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	h.logger.Infof("Health Check: Service Healthy")
+	h.logger.Infof("Id %s", r.Context().Value("userId"))
 	w.WriteHeader(http.StatusOK)
 }
