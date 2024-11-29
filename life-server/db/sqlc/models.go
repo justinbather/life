@@ -20,6 +20,12 @@ type Meal struct {
 	Date        pgtype.Timestamp `json:"date"`
 }
 
+type User struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type Workout struct {
 	ID             int32            `json:"id"`
 	Username       string           `json:"username"`

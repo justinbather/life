@@ -15,4 +15,4 @@ migrate:
 
 .PHONY: generate
 generate:
-	cd ./db && sqlc generate
+	cd ./db && DATABASE_URL=$(DATABASE_URL) sqlc generate

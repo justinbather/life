@@ -10,11 +10,14 @@ import (
 
 type Querier interface {
 	CreateMeal(ctx context.Context, arg CreateMealParams) (Meal, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (Workout, error)
 	GetAllWorkouts(ctx context.Context, username string) ([]Workout, error)
 	GetMealById(ctx context.Context, id int32) (Meal, error)
 	GetMealsByType(ctx context.Context, arg GetMealsByTypeParams) ([]Meal, error)
 	GetMealsFromDateRange(ctx context.Context, arg GetMealsFromDateRangeParams) ([]Meal, error)
+	GetUserById(ctx context.Context, id string) (User, error)
+	GetUserByUsernameAndPass(ctx context.Context, arg GetUserByUsernameAndPassParams) (User, error)
 	GetWorkoutsByType(ctx context.Context, arg GetWorkoutsByTypeParams) ([]Workout, error)
 	GetWorkoutsFromDateRange(ctx context.Context, arg GetWorkoutsFromDateRangeParams) ([]Workout, error)
 }

@@ -47,6 +47,10 @@ func main() {
 
 	healthHandler := handlers.NewHealthHandler(logger)
 
+	uRepository := repository.NewUserRepository(db, logger)
+	uService := service.NewUserService(uRepository)
+	uHandler := handlers.NewUserHandler(uService, logger)
+
 	wRepository := repository.NewWorkoutRepository(db, logger)
 	wService := service.NewWorkoutService(wRepository, logger)
 	wHandler := handlers.NewWorkoutHandler(wService, logger)
@@ -57,6 +61,9 @@ func main() {
 
 	r := mux.NewRouter()
 	r.Handle("/health-check", middleware.AuthMiddleware(http.HandlerFunc(healthHandler.HealthCheck))).Methods(http.MethodGet)
+
+	r.HandleFunc("/auth/login", uHandler.Login).Methods(http.MethodPost)
+	r.HandleFunc("/auth/signup", uHandler.Signup).Methods(http.MethodPost)
 
 	r.HandleFunc("/workouts/{user}/{from}/{to}", wHandler.GetWorkoutsFromDateRange).Methods(http.MethodGet)
 	r.HandleFunc("/workouts/{user}/{type}", wHandler.GetWorkoutsByType).Methods(http.MethodGet)

@@ -7,6 +7,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/justinbather/prettylog v0.0.0-20241115152757-e5d306d87c86
+	github.com/oklog/ulid/v2 v2.1.0
 )
 
 require (
