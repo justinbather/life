@@ -36,6 +36,13 @@ func (h *WorkoutHandler) CreateWorkout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user, err := getUser(r)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	req.User = user
+
 	workout, err := h.service.CreateWorkout(r.Context(), req)
 	if err != nil {
 		h.logger.Errorf("Error doing create workout request: %s", err)

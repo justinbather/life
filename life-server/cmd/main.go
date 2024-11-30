@@ -55,13 +55,13 @@ func main() {
 	// TODO: Move health check to global after
 	protected.HandleFunc("/health-check", healthHandler.HealthCheck).Methods(http.MethodGet)
 
-	protected.HandleFunc("/workouts/{user}/{from}/{to}", workoutHandler.GetWorkoutsFromDateRange).Methods(http.MethodGet)
-	protected.HandleFunc("/workouts/{user}/{type}", workoutHandler.GetWorkoutsByType).Methods(http.MethodGet)
-	protected.HandleFunc("/workouts/{user}", workoutHandler.GetAllWorkouts).Methods(http.MethodGet)
+	protected.HandleFunc("/workouts/{from}/{to}", workoutHandler.GetWorkoutsFromDateRange).Methods(http.MethodGet)
+	protected.HandleFunc("/workouts/{type}", workoutHandler.GetWorkoutsByType).Methods(http.MethodGet)
+	protected.HandleFunc("/workouts", workoutHandler.GetAllWorkouts).Methods(http.MethodGet)
 	protected.HandleFunc("/workouts", workoutHandler.CreateWorkout).Methods(http.MethodPost)
 
 	protected.HandleFunc("/meals/{id}", mealHandler.GetMealById).Methods(http.MethodGet)
-	protected.HandleFunc("/meals/{user}/{from}/{to}", mealHandler.GetMealsFromDateRange).Methods(http.MethodGet)
+	protected.HandleFunc("/meals/{from}/{to}", mealHandler.GetMealsFromDateRange).Methods(http.MethodGet)
 	protected.HandleFunc("/meals", mealHandler.CreateMeal).Methods(http.MethodPost)
 
 	fmt.Println("Life Server Running on 8080")

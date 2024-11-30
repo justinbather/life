@@ -32,6 +32,13 @@ func (h *MealHandler) CreateMeal(w http.ResponseWriter, r *http.Request) {
 		req.Date = time.Now()
 	}
 
+	user, err := getUser(r)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	req.User = user
+
 	meal, err := h.service.CreateMeal(r.Context(), req)
 	if err != nil {
 		h.logger.Errorf("Error creating meal: %s", err)

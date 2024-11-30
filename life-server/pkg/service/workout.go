@@ -56,6 +56,7 @@ func (s *service) GetAllWorkouts(ctx context.Context, user string) ([]model.Work
 }
 
 func (s *service) GetWorkoutsFromDateRange(ctx context.Context, user string, from, to time.Time) ([]model.Workout, error) {
+	s.logger.Infof("Getting workouts for user :%s", user)
 	workouts, err := s.repository.GetWorkoutsFromDateRange(ctx, user, from, to)
 	if err != nil {
 		return nil, err

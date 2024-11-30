@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/justinbather/life/life-server/pkg/http/middleware"
 )
 
 // Learn more about doing custom errors like this, where to put them etc
@@ -33,13 +34,12 @@ func decode[T any](r *http.Request) (T, error) {
 }
 
 func getUser(r *http.Request) (string, error) {
-	params := mux.Vars(r)
-	user := params["user"]
-	if user == "" {
-		return "", ERR_USER_NOT_FOUND
+	userId := r.Context().Value(middleware.UserCtxKey)
+	if userId == nil {
+		return "", fmt.Errorf("Error pulling UserID")
 	}
 
-	return user, nil
+	return userId.(string), nil
 }
 
 func parseDateParams(r *http.Request) (map[string]time.Time, error) {

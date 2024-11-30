@@ -21,7 +21,7 @@ type Middleware interface {
 }
 
 func NewMiddleware(authService service.AuthService, userService service.UserService, logger *prettylog.Logger) Middleware {
-	return &middleware{authService: authService, logger: logger}
+	return &middleware{authService: authService, userService: userService, logger: logger}
 }
 
 type middleware struct {
@@ -47,13 +47,13 @@ func (m *middleware) Protect(next http.Handler) http.Handler {
 		}
 
 		// TODO: optimizable
-		user, err := m.userService.GetUserById(r.Context(), userId)
+		_, err = m.userService.GetUserById(r.Context(), userId)
 		if err != nil {
 			authErr(w)
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), UserCtxKey, user)
+		ctx := context.WithValue(r.Context(), UserCtxKey, userId)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
