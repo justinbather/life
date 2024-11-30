@@ -36,12 +36,14 @@ func (m *middleware) Protect(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		jwt, ok := parseHeader(r.Header)
 		if !ok {
+			m.logger.Warnf("Failed to parse auth header")
 			parseErr(w)
 			return
 		}
 
 		userId, err := m.authService.Authenticate(r.Context(), jwt)
 		if err != nil {
+			m.logger.Warnf("Failed to authenticate user")
 			authErr(w)
 			return
 		}
