@@ -1,11 +1,11 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
+	"fmt"
 	"os"
 
+	"github.com/justinbather/life/life/internal/config"
+	"github.com/justinbather/life/life/internal/http"
 	"github.com/spf13/cobra"
 )
 
@@ -13,13 +13,8 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "life",
 	Short: "Track meals, workouts, and more, right from the terminal",
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -32,11 +27,18 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	//rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cli.yaml)")
-	rootCmd.PersistentFlags().String("user", "Justin", "the user")
+	config, err := config.ReadLifeConfig()
+	if err != nil {
+		fmt.Printf("Error reading Life Config: %s", err)
+		os.Exit(1)
+	}
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	jwt, err := http.Authenticate(config)
+	if err != nil {
+		fmt.Printf("Error Authenticating: %s\n", err)
+		os.Exit(1)
+	}
 
+	rootCmd.PersistentFlags().String("jwt", jwt, "")
+	rootCmd.PersistentFlags().String("apiUrl", config.ApiUrl, "")
 }

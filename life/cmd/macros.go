@@ -4,6 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -26,10 +27,19 @@ var macrosCmd = &cobra.Command{
 		}
 
 		user, _ := cmd.Flags().GetString("user")
+		jwt, err := cmd.Flags().GetString("jwt")
+		if err != nil {
+			fmt.Printf("Error in macros command: %s\n", err)
+		}
+		apiUrl, err := cmd.Flags().GetString("apiUrl")
+		if err != nil {
+			fmt.Printf("Error in get macros command: %s\n", err)
+			return err
+		}
 
 		mp := tf.GetRange()
 
-		macros, err := service.GetMacros(user, mp)
+		macros, err := service.GetMacros(user, mp, jwt, apiUrl)
 		if err != nil {
 			return err
 		}

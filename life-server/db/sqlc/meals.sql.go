@@ -12,14 +12,14 @@ import (
 )
 
 const createMeal = `-- name: CreateMeal :one
-INSERT INTO meal (type, username, calories, protein, carbs, fat, description, date) 
+INSERT INTO meal (type, user_id, calories, protein, carbs, fat, description, date) 
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-	RETURNING id, username, type, calories, protein, carbs, fat, description, date
+	RETURNING id, user_id, type, calories, protein, carbs, fat, description, date
 `
 
 type CreateMealParams struct {
 	Type        string           `json:"type"`
-	Username    string           `json:"username"`
+	UserID      string           `json:"user_id"`
 	Calories    int32            `json:"calories"`
 	Protein     int32            `json:"protein"`
 	Carbs       int32            `json:"carbs"`
@@ -28,10 +28,22 @@ type CreateMealParams struct {
 	Date        pgtype.Timestamp `json:"date"`
 }
 
-func (q *Queries) CreateMeal(ctx context.Context, arg CreateMealParams) (Meal, error) {
+type CreateMealRow struct {
+	ID          int32            `json:"id"`
+	UserID      string           `json:"user_id"`
+	Type        string           `json:"type"`
+	Calories    int32            `json:"calories"`
+	Protein     int32            `json:"protein"`
+	Carbs       int32            `json:"carbs"`
+	Fat         int32            `json:"fat"`
+	Description *string          `json:"description"`
+	Date        pgtype.Timestamp `json:"date"`
+}
+
+func (q *Queries) CreateMeal(ctx context.Context, arg CreateMealParams) (CreateMealRow, error) {
 	row := q.db.QueryRow(ctx, createMeal,
 		arg.Type,
-		arg.Username,
+		arg.UserID,
 		arg.Calories,
 		arg.Protein,
 		arg.Carbs,
@@ -39,10 +51,10 @@ func (q *Queries) CreateMeal(ctx context.Context, arg CreateMealParams) (Meal, e
 		arg.Description,
 		arg.Date,
 	)
-	var i Meal
+	var i CreateMealRow
 	err := row.Scan(
 		&i.ID,
-		&i.Username,
+		&i.UserID,
 		&i.Type,
 		&i.Calories,
 		&i.Protein,
@@ -55,7 +67,7 @@ func (q *Queries) CreateMeal(ctx context.Context, arg CreateMealParams) (Meal, e
 }
 
 const getMealById = `-- name: GetMealById :one
-SELECT id, username, type, calories, protein, carbs, fat, description, date FROM meal WHERE id = $1
+SELECT id, type, calories, protein, carbs, fat, description, date, user_id FROM meal WHERE id = $1
 `
 
 func (q *Queries) GetMealById(ctx context.Context, id int32) (Meal, error) {
@@ -63,7 +75,6 @@ func (q *Queries) GetMealById(ctx context.Context, id int32) (Meal, error) {
 	var i Meal
 	err := row.Scan(
 		&i.ID,
-		&i.Username,
 		&i.Type,
 		&i.Calories,
 		&i.Protein,
@@ -71,21 +82,22 @@ func (q *Queries) GetMealById(ctx context.Context, id int32) (Meal, error) {
 		&i.Fat,
 		&i.Description,
 		&i.Date,
+		&i.UserID,
 	)
 	return i, err
 }
 
 const getMealsByType = `-- name: GetMealsByType :many
-SELECT id, username, type, calories, protein, carbs, fat, description, date FROM meal WHERE username = $1 and type = $2
+SELECT id, type, calories, protein, carbs, fat, description, date, user_id FROM meal WHERE user_id = $1 and type = $2
 `
 
 type GetMealsByTypeParams struct {
-	Username string `json:"username"`
-	Type     string `json:"type"`
+	UserID string `json:"user_id"`
+	Type   string `json:"type"`
 }
 
 func (q *Queries) GetMealsByType(ctx context.Context, arg GetMealsByTypeParams) ([]Meal, error) {
-	rows, err := q.db.Query(ctx, getMealsByType, arg.Username, arg.Type)
+	rows, err := q.db.Query(ctx, getMealsByType, arg.UserID, arg.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +107,6 @@ func (q *Queries) GetMealsByType(ctx context.Context, arg GetMealsByTypeParams) 
 		var i Meal
 		if err := rows.Scan(
 			&i.ID,
-			&i.Username,
 			&i.Type,
 			&i.Calories,
 			&i.Protein,
@@ -103,6 +114,7 @@ func (q *Queries) GetMealsByType(ctx context.Context, arg GetMealsByTypeParams) 
 			&i.Fat,
 			&i.Description,
 			&i.Date,
+			&i.UserID,
 		); err != nil {
 			return nil, err
 		}
@@ -115,17 +127,17 @@ func (q *Queries) GetMealsByType(ctx context.Context, arg GetMealsByTypeParams) 
 }
 
 const getMealsFromDateRange = `-- name: GetMealsFromDateRange :many
-SELECT id, username, type, calories, protein, carbs, fat, description, date FROM meal WHERE username = $1 AND date BETWEEN $2 AND $3
+SELECT id, type, calories, protein, carbs, fat, description, date, user_id FROM meal WHERE user_id = $1 AND date BETWEEN $2 AND $3
 `
 
 type GetMealsFromDateRangeParams struct {
-	Username string           `json:"username"`
-	Date     pgtype.Timestamp `json:"date"`
-	Date_2   pgtype.Timestamp `json:"date_2"`
+	UserID string           `json:"user_id"`
+	Date   pgtype.Timestamp `json:"date"`
+	Date_2 pgtype.Timestamp `json:"date_2"`
 }
 
 func (q *Queries) GetMealsFromDateRange(ctx context.Context, arg GetMealsFromDateRangeParams) ([]Meal, error) {
-	rows, err := q.db.Query(ctx, getMealsFromDateRange, arg.Username, arg.Date, arg.Date_2)
+	rows, err := q.db.Query(ctx, getMealsFromDateRange, arg.UserID, arg.Date, arg.Date_2)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +147,6 @@ func (q *Queries) GetMealsFromDateRange(ctx context.Context, arg GetMealsFromDat
 		var i Meal
 		if err := rows.Scan(
 			&i.ID,
-			&i.Username,
 			&i.Type,
 			&i.Calories,
 			&i.Protein,
@@ -143,6 +154,7 @@ func (q *Queries) GetMealsFromDateRange(ctx context.Context, arg GetMealsFromDat
 			&i.Fat,
 			&i.Description,
 			&i.Date,
+			&i.UserID,
 		); err != nil {
 			return nil, err
 		}

@@ -1,4 +1,4 @@
-package http
+package handlers
 
 import (
 	"fmt"
@@ -35,6 +35,13 @@ func (h *WorkoutHandler) CreateWorkout(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 		return
 	}
+
+	user, err := getUser(r)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	req.User = user
 
 	workout, err := h.service.CreateWorkout(r.Context(), req)
 	if err != nil {

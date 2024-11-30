@@ -8,11 +8,11 @@ import (
 
 var mealUri string = "/meals"
 
-func CreateMeal(meal model.Meal) (model.Meal, error) {
-	return create(meal, mealUri)
+func CreateMeal(meal model.Meal, jwt, apiUrl string) (model.Meal, error) {
+	return post(meal, apiUrl+mealUri, jwt)
 }
 
-func GetMeals(user string, tf map[string]string) ([]model.Meal, error) {
-	fullPath := mealUri + fmt.Sprintf("/%s/%s/%s", user, tf["start"], tf["end"])
-	return get(fullPath, model.Meal{})
+func GetMeals(user string, tf map[string]string, jwt, apiUrl string) ([]model.Meal, error) {
+	fullPath := apiUrl + mealUri + fmt.Sprintf("/%s/%s", tf["start"], tf["end"])
+	return get(fullPath, model.Meal{}, jwt)
 }
