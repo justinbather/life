@@ -27,11 +27,11 @@ var workoutsCmd = &cobra.Command{
 		}
 
 		user, _ := cmd.Flags().GetString("user")
-		jwt, err := cmd.PersistentFlags().GetString("jwt")
+		jwt, err := cmd.Flags().GetString("jwt")
 		if err != nil {
 			return err
 		}
-		apiUrl, err := cmd.PersistentFlags().GetString("apiUrl")
+		apiUrl, err := cmd.Flags().GetString("apiUrl")
 		if err != nil {
 			return err
 		}

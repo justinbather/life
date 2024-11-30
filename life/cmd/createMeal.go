@@ -26,8 +26,14 @@ var createMealCmd = &cobra.Command{
 		}
 
 		meal := mealFromFlags(cmd.Flags())
-		jwt, _ := cmd.PersistentFlags().GetString("jwt")
-		apiUrl, _ := cmd.PersistentFlags().GetString("apiUrl")
+		jwt, err := cmd.Flags().GetString("jwt")
+		if err != nil {
+			return err
+		}
+		apiUrl, _ := cmd.Flags().GetString("apiUrl")
+		if err != nil {
+			return err
+		}
 
 		_, err = service.CreateMeal(meal, jwt, apiUrl)
 		if err != nil {
