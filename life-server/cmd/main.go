@@ -21,6 +21,7 @@ import (
 
 func main() {
 	url := os.Getenv("DATABASE_URL")
+	var authCacheTTL int = 1
 
 	db, err := setupDb(url)
 	if err != nil {
@@ -31,14 +32,18 @@ func main() {
 
 	logger := prettylog.New()
 
+	userRepository := repository.NewUserRepository(db, logger)
+	userService := service.NewUserService(userRepository)
+
+	// TODO: un fuck this dependency between user and auth services
+	authService := service.NewAuthService(db, userService, authCacheTTL, logger)
+	userHandler := handlers.NewUserHandler(userService, authService, logger)
+
 	healthHandler := handlers.NewHealthHandler(logger)
-	userHandler, userService := registerUserDomain(db, logger)
 	workoutHandler := registerWorkoutDomain(db, logger)
 	mealHandler := registerMealDomain(db, logger)
 
-	auth := service.NewAuthService()
-
-	mw := middleware.NewMiddleware(auth, userService, logger)
+	mw := middleware.NewMiddleware(authService, userService, logger)
 
 	global := mux.NewRouter()
 
@@ -94,7 +99,6 @@ func setupDb(url string) (*pgx.Conn, error) {
 }
 
 func migrateDb(url string) error {
-
 	m, err := migrate.New(
 		"file://./db/migrations",
 		url)
@@ -109,9 +113,7 @@ func migrateDb(url string) error {
 	return nil
 }
 
-func registerUserDomain(db *pgx.Conn, logger *prettylog.Logger) (*handlers.UserHandler, service.UserService) {
-
-	authService := service.NewAuthService()
+func registerUserDomain(db *pgx.Conn, authService service.AuthService, logger *prettylog.Logger) (*handlers.UserHandler, service.UserService) {
 
 	uRepository := repository.NewUserRepository(db, logger)
 	uService := service.NewUserService(uRepository)
@@ -121,7 +123,6 @@ func registerUserDomain(db *pgx.Conn, logger *prettylog.Logger) (*handlers.UserH
 }
 
 func registerWorkoutDomain(db *pgx.Conn, logger *prettylog.Logger) *handlers.WorkoutHandler {
-
 	wRepository := repository.NewWorkoutRepository(db, logger)
 	wService := service.NewWorkoutService(wRepository, logger)
 	wHandler := handlers.NewWorkoutHandler(wService, logger)

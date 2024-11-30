@@ -40,14 +40,7 @@ func (m *middleware) Protect(next http.Handler) http.Handler {
 			return
 		}
 
-		userId, err := m.authService.Authenticate(jwt)
-		if err != nil {
-			authErr(w)
-			return
-		}
-
-		// TODO: optimizable
-		_, err = m.userService.GetUserById(r.Context(), userId)
+		userId, err := m.authService.Authenticate(r.Context(), jwt)
 		if err != nil {
 			authErr(w)
 			return
