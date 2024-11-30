@@ -27,12 +27,12 @@ func NewMealRepository(db sqlc.DBTX, logger *prettylog.Logger) MealRepository {
 
 func (r *mealRepository) CreateMeal(ctx context.Context, meal model.Meal) (model.Meal, error) {
 	date := pgtype.Timestamp{Time: meal.Date, Valid: true}
-	record, err := r.queries.CreateMeal(ctx, sqlc.CreateMealParams{Type: meal.Type, Username: meal.User, Calories: int32(meal.Calories), Protein: int32(meal.Protein), Carbs: int32(meal.Carbs), Fat: int32(meal.Fat), Description: &meal.Description, Date: date})
+	record, err := r.queries.CreateMeal(ctx, sqlc.CreateMealParams{Type: meal.Type, UserID: meal.User, Calories: int32(meal.Calories), Protein: int32(meal.Protein), Carbs: int32(meal.Carbs), Fat: int32(meal.Fat), Description: &meal.Description, Date: date})
 	if err != nil {
 		r.logger.Errorf("Error saving meal: %s", err)
 		return model.Meal{}, nil
 	}
-	return mapMeal(record), nil
+	return mapMealRow(record), nil
 }
 
 func (r *mealRepository) GetMealById(ctx context.Context, id int) (model.Meal, error) {
@@ -46,7 +46,7 @@ func (r *mealRepository) GetMealById(ctx context.Context, id int) (model.Meal, e
 
 func (r *mealRepository) GetMealsFromDateRange(ctx context.Context, user string, from time.Time, to time.Time) ([]model.Meal, error) {
 	r.logger.Infof("Fetching meals from %s to %s", from, to)
-	records, err := r.queries.GetMealsFromDateRange(ctx, sqlc.GetMealsFromDateRangeParams{Username: user, Date: mapDate(from), Date_2: mapDate(to)})
+	records, err := r.queries.GetMealsFromDateRange(ctx, sqlc.GetMealsFromDateRangeParams{UserID: user, Date: mapDate(from), Date_2: mapDate(to)})
 	if err != nil {
 		r.logger.Errorf("Error getting meals from date range: ", err)
 		return nil, err
@@ -64,5 +64,10 @@ func mapMeals(m []sqlc.Meal) []model.Meal {
 }
 
 func mapMeal(m sqlc.Meal) model.Meal {
-	return model.Meal{Id: int(m.ID), User: m.Username, Type: m.Type, Calories: int(m.Calories), Protein: int(m.Protein), Carbs: int(m.Carbs), Fat: int(m.Fat), Description: *m.Description, Date: m.Date.Time}
+	return model.Meal{Id: int(m.ID), User: m.UserID, Type: m.Type, Calories: int(m.Calories), Protein: int(m.Protein), Carbs: int(m.Carbs), Fat: int(m.Fat), Description: *m.Description, Date: m.Date.Time}
+}
+
+func mapMealRow(m sqlc.CreateMealRow) model.Meal {
+	return model.Meal{Id: int(m.ID), User: m.UserID, Type: m.Type, Calories: int(m.Calories), Protein: int(m.Protein), Carbs: int(m.Carbs), Fat: int(m.Fat), Description: *m.Description, Date: m.Date.Time}
+
 }

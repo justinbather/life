@@ -3,3 +3,19 @@ CREATE TABLE users (
 	username VARCHAR NOT NULL UNIQUE,
 	password VARCHAR NOT NULL
 );
+
+ALTER TABLE workout ADD COLUMN user_id VARCHAR;
+
+UPDATE workout SET user_id = 'old';
+
+ALTER TABLE workout ALTER COLUMN user_id SET NOT NULL;
+
+ALTER TABLE workout DROP COLUMN username;
+
+ALTER TABLE meal ADD COLUMN user_id VARCHAR;
+
+UPDATE meal SET user_id = 'old';
+
+ALTER TABLE meal ALTER COLUMN user_id SET NOT NULL;
+
+ALTER TABLE meal DROP COLUMN username;

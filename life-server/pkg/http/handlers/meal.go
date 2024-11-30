@@ -11,16 +11,16 @@ import (
 	"github.com/justinbather/prettylog"
 )
 
-type mealHandler struct {
+type MealHandler struct {
 	logger  *prettylog.Logger
 	service service.MealService
 }
 
-func NewMealHandler(service service.MealService, logger *prettylog.Logger) *mealHandler {
-	return &mealHandler{logger: logger, service: service}
+func NewMealHandler(service service.MealService, logger *prettylog.Logger) *MealHandler {
+	return &MealHandler{logger: logger, service: service}
 }
 
-func (h *mealHandler) CreateMeal(w http.ResponseWriter, r *http.Request) {
+func (h *MealHandler) CreateMeal(w http.ResponseWriter, r *http.Request) {
 	req, err := decode[model.Meal](r)
 	if err != nil {
 		h.logger.Errorf("Error bad create meal request: %s", err)
@@ -48,7 +48,7 @@ func (h *mealHandler) CreateMeal(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *mealHandler) GetMealById(w http.ResponseWriter, r *http.Request) {
+func (h *MealHandler) GetMealById(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
 
@@ -78,7 +78,7 @@ func (h *mealHandler) GetMealById(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *mealHandler) GetMealsFromDateRange(w http.ResponseWriter, r *http.Request) {
+func (h *MealHandler) GetMealsFromDateRange(w http.ResponseWriter, r *http.Request) {
 	user, err := getUser(r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)

@@ -20,12 +20,13 @@ type Middleware interface {
 	Tracer(next http.Handler) http.Handler
 }
 
-func NewMiddleware(authService service.AuthService, logger *prettylog.Logger) Middleware {
+func NewMiddleware(authService service.AuthService, userService service.UserService, logger *prettylog.Logger) Middleware {
 	return &middleware{authService: authService, logger: logger}
 }
 
 type middleware struct {
 	authService service.AuthService
+	userService service.UserService
 	logger      *prettylog.Logger
 }
 
@@ -45,7 +46,14 @@ func (m *middleware) Protect(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), UserCtxKey, userId)
+		// TODO: optimizable
+		user, err := m.userService.GetUserById(r.Context(), userId)
+		if err != nil {
+			authErr(w)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), UserCtxKey, user)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
