@@ -24,8 +24,9 @@ var createWorkoutCmd = &cobra.Command{
 		}
 
 		workout := workoutFromFlags(cmd.Flags())
+		jwt, _ := cmd.PersistentFlags().GetString("jwt")
 
-		_, err := service.CreateWorkout(workout)
+		_, err := service.CreateWorkout(workout, jwt)
 		if err != nil {
 			fmt.Printf("Error Creating workout: %s", err)
 			return nil

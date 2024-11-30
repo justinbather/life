@@ -26,10 +26,11 @@ var macrosCmd = &cobra.Command{
 		}
 
 		user, _ := cmd.Flags().GetString("user")
+		jwt, _ := cmd.PersistentFlags().GetString("jwt")
 
 		mp := tf.GetRange()
 
-		macros, err := service.GetMacros(user, mp)
+		macros, err := service.GetMacros(user, mp, jwt)
 		if err != nil {
 			return err
 		}

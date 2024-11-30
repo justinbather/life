@@ -6,37 +6,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
-
-	"github.com/spf13/viper"
 )
 
-var baseUri string
-
-func init() {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		fmt.Printf("Failed to get home directory: %v", err)
-		os.Exit(1)
-	}
-	configPath := filepath.Join(homeDir, ".life.yaml")
-
-	viper.SetConfigType("yaml")
-	viper.SetConfigFile(configPath)
-
-	// Read in the .env file
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Printf("Error reading .env file: %v", err)
-		os.Exit(1)
-	}
-	baseUri = viper.GetString("API_URL")
-	if baseUri == "" {
-		baseUri = "http://localhost:8080"
-	}
-}
-
-func create[T any](v T, uri string) (T, error) {
+func post[T any](v T, uri, jwt string) (T, error) {
 	var idk T
 
 	data, err := json.Marshal(v)
@@ -44,12 +16,13 @@ func create[T any](v T, uri string) (T, error) {
 		return idk, err
 	}
 
-	r, err := http.NewRequest("POST", baseUri+uri, bytes.NewBuffer(data))
+	r, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
 	if err != nil {
 		return idk, err
 	}
 
 	r.Header.Set("Content-Type", "application/json")
+	r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", jwt))
 	client := &http.Client{}
 
 	resp, err := client.Do(r)
@@ -74,12 +47,14 @@ func create[T any](v T, uri string) (T, error) {
 	return created, nil
 }
 
-func get[T any](uri string, _ T) ([]T, error) {
+func get[T any](uri string, _ T, jwt string) ([]T, error) {
 
-	req, err := http.NewRequest("GET", baseUri+uri, nil)
+	req, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", jwt))
 
 	client := &http.Client{}
 

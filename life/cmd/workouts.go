@@ -27,10 +27,11 @@ var workoutsCmd = &cobra.Command{
 		}
 
 		user, _ := cmd.Flags().GetString("user")
+		jwt, _ := cmd.PersistentFlags().GetString("jwt")
 
 		dateMap := tf.GetRange()
 
-		workouts, err := service.GetWorkouts(user, dateMap)
+		workouts, err := service.GetWorkouts(user, dateMap, jwt)
 		if err != nil {
 			return err
 		}

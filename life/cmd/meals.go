@@ -26,10 +26,11 @@ var mealsCmd = &cobra.Command{
 		}
 
 		user, _ := cmd.Flags().GetString("user")
+		jwt, _ := cmd.PersistentFlags().GetString("jwt")
 
 		mp := tf.GetRange()
 
-		meals, err := service.GetMeals(user, mp)
+		meals, err := service.GetMeals(user, mp, jwt)
 		if err != nil {
 			return err
 		}
