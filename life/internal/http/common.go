@@ -65,7 +65,7 @@ func get[T any](uri string, _ T, jwt string) ([]T, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Error fetching workouts")
+		return nil, fmt.Errorf("Error fetching workouts. Got status=%d", resp.StatusCode)
 	}
 
 	var items []T

@@ -27,8 +27,9 @@ var createMealCmd = &cobra.Command{
 
 		meal := mealFromFlags(cmd.Flags())
 		jwt, _ := cmd.PersistentFlags().GetString("jwt")
+		apiUrl, _ := cmd.PersistentFlags().GetString("apiUrl")
 
-		_, err = service.CreateMeal(meal, jwt)
+		_, err = service.CreateMeal(meal, jwt, apiUrl)
 		if err != nil {
 			fmt.Printf("Error creating meal: %s", err)
 			return nil

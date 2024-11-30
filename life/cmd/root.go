@@ -35,10 +35,10 @@ func init() {
 
 	jwt, err := http.Authenticate(config)
 	if err != nil {
-		fmt.Printf("Error Authenticating: %s", err)
+		fmt.Printf("Error Authenticating: %s\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Authenticated! \n %s\n", jwt)
 	rootCmd.PersistentFlags().String("jwt", jwt, "")
+	rootCmd.PersistentFlags().String("apiUrl", config.ApiUrl, "")
 }

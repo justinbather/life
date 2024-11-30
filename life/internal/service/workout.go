@@ -5,10 +5,10 @@ import (
 	"github.com/justinbather/life/life/model"
 )
 
-func CreateWorkout(workout model.Workout) (model.Workout, error) {
-	return http.CreateWorkout(workout)
+func CreateWorkout(workout model.Workout, jwt, apiUrl string) (model.Workout, error) {
+	return http.CreateWorkout(workout, jwt, apiUrl)
 }
 
-func GetWorkouts(user string, dateRange map[string]string) ([]model.Workout, error) {
-	return http.GetWorkouts(user, dateRange)
+func GetWorkouts(user string, dateRange map[string]string, jwt, apiUrl string) ([]model.Workout, error) {
+	return http.GetWorkouts(user, dateRange, jwt, apiUrl)
 }

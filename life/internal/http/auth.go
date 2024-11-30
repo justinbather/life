@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -16,7 +17,7 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	Jwt     string    `json:"jwt"`
+	Token   string    `json:"token"`
 	Expires time.Time `json:"expires"`
 }
 
@@ -42,6 +43,10 @@ func Authenticate(config config.Config) (string, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 201 {
+		return "", fmt.Errorf("Invalid username and/or password")
+	}
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
@@ -51,5 +56,5 @@ func Authenticate(config config.Config) (string, error) {
 
 	err = json.Unmarshal(body, &auth)
 
-	return auth.Jwt, nil
+	return auth.Token, nil
 }

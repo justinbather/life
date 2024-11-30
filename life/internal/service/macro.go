@@ -38,13 +38,13 @@ func (m MacroMap) String() string {
 	return fmt.Sprintf("Total Macros\n+Cals: %d\n-Cals: %d\nCals (sum): %d\nProtein: %d\nCarbs: %d\nFat: %d\n", m["calsIn"], m["calsBurned"], m["calsIn"]-m["calsBurned"], m["protein"], m["carbs"], m["fat"])
 }
 
-func GetMacros(user string, tf map[string]string, jwt string) ([]Macro, error) {
-	workouts, err := GetWorkouts(user, tf, jwt)
+func GetMacros(user string, tf map[string]string, jwt, apiUrl string) ([]Macro, error) {
+	workouts, err := GetWorkouts(user, tf, jwt, apiUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	meals, err := GetMeals(user, tf, jwt)
+	meals, err := GetMeals(user, tf, jwt, apiUrl)
 	if err != nil {
 		return nil, err
 	}
