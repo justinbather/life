@@ -12,8 +12,8 @@ import (
 )
 
 const createBmr = `-- name: CreateBmr :one
-INSERT INTO bmr (created_at, total_calories, num_workouts) 
-	VALUES ($1, $2, $3)
+INSERT INTO bmr (created_at, total_calories, num_workouts, user_id) 
+	VALUES ($1, $2, $3, $4)
 	RETURNING id, user_id, created_at, total_calories, num_workouts
 `
 
@@ -21,10 +21,16 @@ type CreateBmrParams struct {
 	CreatedAt     pgtype.Timestamp `json:"created_at"`
 	TotalCalories int32            `json:"total_calories"`
 	NumWorkouts   int32            `json:"num_workouts"`
+	UserID        string           `json:"user_id"`
 }
 
 func (q *Queries) CreateBmr(ctx context.Context, arg CreateBmrParams) (Bmr, error) {
-	row := q.db.QueryRow(ctx, createBmr, arg.CreatedAt, arg.TotalCalories, arg.NumWorkouts)
+	row := q.db.QueryRow(ctx, createBmr,
+		arg.CreatedAt,
+		arg.TotalCalories,
+		arg.NumWorkouts,
+		arg.UserID,
+	)
 	var i Bmr
 	err := row.Scan(
 		&i.ID,

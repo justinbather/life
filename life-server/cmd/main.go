@@ -35,9 +35,13 @@ func main() {
 	userRepository := repository.NewUserRepository(db, logger)
 	userService := service.NewUserService(userRepository)
 
-	// TODO: un fuck this dependency between user and auth services
+	// TODO: figure out this dependency between user and auth services
 	authService := service.NewAuthService(db, userService, authCacheTTL, logger)
 	userHandler := handlers.NewUserHandler(userService, authService, logger)
+
+	bmrRepository := repository.NewBmrRepository(db, logger)
+	bmrService := service.NewBmrService(bmrRepository)
+	bmrHandler := handlers.NewBmrHandler(bmrService, logger)
 
 	healthHandler := handlers.NewHealthHandler(logger)
 	workoutHandler := registerWorkoutDomain(db, logger)
@@ -59,6 +63,9 @@ func main() {
 
 	// TODO: Move health check to global after
 	protected.HandleFunc("/health-check", healthHandler.HealthCheck).Methods(http.MethodGet)
+
+	protected.HandleFunc("/bmr", bmrHandler.CreateBmr).Methods(http.MethodPost)
+	protected.HandleFunc("/bmr/{from}/{to}", bmrHandler.GetBmrFromDateRange).Methods(http.MethodGet)
 
 	protected.HandleFunc("/workouts/{from}/{to}", workoutHandler.GetWorkoutsFromDateRange).Methods(http.MethodGet)
 	protected.HandleFunc("/workouts/{type}", workoutHandler.GetWorkoutsByType).Methods(http.MethodGet)
