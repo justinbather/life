@@ -8,6 +8,14 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Bmr struct {
+	ID            int32            `json:"id"`
+	UserID        string           `json:"user_id"`
+	CreatedAt     pgtype.Timestamp `json:"created_at"`
+	TotalCalories int32            `json:"total_calories"`
+	NumWorkouts   int32            `json:"num_workouts"`
+}
+
 type Meal struct {
 	ID          int32            `json:"id"`
 	Type        string           `json:"type"`

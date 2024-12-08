@@ -9,10 +9,13 @@ import (
 )
 
 type Querier interface {
+	CreateBmr(ctx context.Context, arg CreateBmrParams) (Bmr, error)
 	CreateMeal(ctx context.Context, arg CreateMealParams) (CreateMealRow, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (CreateWorkoutRow, error)
 	GetAllWorkouts(ctx context.Context, userID string) ([]Workout, error)
+	GetBmrById(ctx context.Context, id int32) (Bmr, error)
+	GetBmrFromDateRange(ctx context.Context, arg GetBmrFromDateRangeParams) ([]Bmr, error)
 	GetMealById(ctx context.Context, id int32) (Meal, error)
 	GetMealsByType(ctx context.Context, arg GetMealsByTypeParams) ([]Meal, error)
 	GetMealsFromDateRange(ctx context.Context, arg GetMealsFromDateRangeParams) ([]Meal, error)
